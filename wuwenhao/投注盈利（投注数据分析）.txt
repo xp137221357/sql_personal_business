@@ -1,0 +1,53 @@
+  <select id="weekProfitLossQuery" parameterClass="java.util.HashMap" resultClass="java.util.HashMap">
+                SELECT
+                                <isEmpty property="group_by_week">
+                                        DATE_FORMAT(a.pay_time, '%Y-%m-%d') AS stat_time,
+                                </isEmpty>
+                                <isNotEmpty property="group_by_week">
+                                        DATE_FORMAT(date_add(a.pay_time, interval -weekday(a.pay_time) day), '%m-%d') as from_day,
+                                        DATE_FORMAT(date_add(a.pay_time, interval 6 - weekday(a.pay_time) day), '%m-%d') as to_day,
+                                        concat(DATE_FORMAT(date_add(a.pay_time, interval - weekday(a.pay_time) day), '%Y-%m'), ',' ,DATE_FORMAT(a.pay_time,'%v')) as stat_time,
+                                </isNotEmpty>
+                           COUNT(a.balance_match_id)           AS match_field_num,
+                       <isEqual property="account_type" compareValue="0">
+                                round(SUM(a.item_money))                  AS order_total,
+                                round(SUM(a.prize_money))                  AS return_total,
+                           </isEqual>
+                           <isEqual property="account_type" compareValue="1001">
+                                round(SUM(a.coin_buy_money))                  AS order_total,
+                                round(SUM(a.coin_prize_money))                  AS return_total,
+                           </isEqual>
+                           <isEqual property="account_type" compareValue="1015">
+                                round(SUM(a.p_coin_buy_money))                  AS order_total,
+                                round(SUM(a.p_coin_prize_money))                  AS return_total,
+                           </isEqual>
+                       IF(SIGN(SUM(IF(a.item_status IN ( 10, 100 ), 1, 0))) = 1, '进行中', '已结算') status,
+                       COUNT(DISTINCT a.user_id)           allUsers
+                  FROM t_order_item a
+        INNER JOIN t_order b
+                    ON a.order_id = b.order_id
+                 WHERE b.pay_status = 10
+                 <isNotEmpty property="begin_time" prepend="and">
+                <![CDATA[
+                   a.pay_time >= #begin_time#
+                   ]]>
+              </isNotEmpty>
+              <isNotEmpty property="end_time" prepend="and">
+                <![CDATA[
+                        a.pay_time <= #end_time#
+                ]]>
+              </isNotEmpty>
+               <isNotEmpty property="channel_type" prepend="and">
+                <![CDATA[
+                        a.CHANNEL_CODE = #channel_type#
+                ]]>
+              </isNotEmpty>
+            <isNotEqual property="stat_time_type" compareValue="2">
+                GROUP BY stat_time
+                        order by stat_time desc
+            </isNotEqual>
+        </select>
+
+        <select id="getAllChannle" resultClass="java.util.HashMap">
+                select * from t_channel where status = 1
+        </select>

@@ -1,0 +1,432 @@
+
+
+## 大用户前总金币
+insert into t_stat_coin_daily(user_type, channel_code, stat_date, fore_total_coins)
+SELECT 
+    'boss','', date_add(curdate(), interval -1 day),ifnull(round(SUM(t1.AFTER_VALUE),4) ,0) 
+FROM
+    (SELECT 
+        *
+    FROM
+        (SELECT 
+        ai.AFTER_VALUE, ai.USER_ID
+    FROM
+        forum.t_acct_items ai
+    where ai.USER_ID in (select t.user_id from forum.v_user_boss t)
+        AND ai.item_status = 10
+        AND ai.ACCT_TYPE = 1001
+        AND ai.ADD_TIME < date_add(curdate(), interval -1 day)
+    ORDER BY ai.ADD_TIME DESC) t
+    GROUP BY t.USER_ID) t1
+on duplicate key update fore_total_coins = values(fore_total_coins);
+    
+
+## 新用户前总金币
+insert into t_stat_coin_daily(user_type, channel_code, stat_date, fore_total_coins)
+SELECT 
+    'new','', date_add(curdate(), interval -1 day),ifnull(round(SUM(t1.AFTER_VALUE),4) ,0) 
+FROM
+    (SELECT 
+        *
+    FROM
+        (SELECT 
+        ai.AFTER_VALUE, ai.USER_ID
+    FROM
+        forum.t_acct_items ai
+    where ai.USER_ID in (select user_id from forum.v_user_new where crt_time >= date_add(curdate(), interval -1 day) and crt_time < date_add(curdate(), interval -0 day) )
+        AND ai.item_status = 10
+        AND ai.ACCT_TYPE = 1001
+        AND ai.ADD_TIME < date_add(curdate(), interval -1 day)
+    ORDER BY ai.ADD_TIME DESC) t
+    GROUP BY t.USER_ID) t1
+on duplicate key update fore_total_coins = values(fore_total_coins);
+    
+    
+## 留存用户前总金币
+insert into t_stat_coin_daily(user_type, channel_code, stat_date, fore_total_coins)
+SELECT 
+    'old','', date_add(curdate(), interval -1 day),ifnull(round(SUM(t1.AFTER_VALUE),4) ,0) 
+FROM
+    (SELECT 
+        *
+    FROM
+        (SELECT 
+        ai.AFTER_VALUE, ai.USER_ID
+    FROM
+        forum.t_acct_items ai
+    where ai.USER_ID in (select user_id from forum.v_user_old where crt_time < date_add(curdate(), interval -1 day) )
+        AND ai.item_status = 10
+        AND ai.ACCT_TYPE = 1001
+        AND ai.ADD_TIME < date_add(curdate(), interval -1 day)
+    ORDER BY ai.ADD_TIME DESC) t
+    GROUP BY t.USER_ID) t1
+on duplicate key update fore_total_coins = values(fore_total_coins);
+    
+    
+## 大户充值金币
+insert into t_stat_coin_daily(user_type, channel_code, stat_date, recharge_coins)
+SELECT  'boss','',date_add(curdate(), interval -1 day), IFNULL(SUM(ai.CHANGE_VALUE), 0) 
+FROM forum.t_acct_items ai 
+where  ai.item_status = 10
+        AND ai.ACCT_TYPE = 1001
+        AND ai.ITEM_EVENT = 'COIN_FROM_DIAMEND'
+        AND ai.ADD_TIME >= date_add(curdate(), interval -1 day)
+        AND ai.ADD_TIME < curdate()
+        AND ai.USER_ID IN (SELECT  user_id FROM forum.v_user_boss)
+on duplicate key update recharge_coins = values(recharge_coins);
+        
+        
+## 新用户充值金币.
+insert into t_stat_coin_daily(user_type, channel_code, stat_date, recharge_coins)
+SELECT  'new','',date_add(curdate(), interval -1 day), IFNULL(SUM(ai.CHANGE_VALUE), 0) 
+FROM forum.t_acct_items ai 
+where  ai.item_status = 10
+        AND ai.ACCT_TYPE = 1001
+        AND ai.ITEM_EVENT = 'COIN_FROM_DIAMEND'
+        AND ai.ADD_TIME >= date_add(curdate(), interval -1 day)
+        AND ai.ADD_TIME < curdate()
+        AND ai.USER_ID IN ( select user_id from forum.v_user_new where crt_time >=date_add(curdate(), interval -1 day) and crt_time <curdate())
+on duplicate key update recharge_coins = values(recharge_coins);
+        
+        
+## 留存用户充值金币
+insert into t_stat_coin_daily(user_type, channel_code, stat_date, recharge_coins)
+SELECT  'old','',date_add(curdate(), interval -1 day), IFNULL(SUM(ai.CHANGE_VALUE), 0) 
+FROM forum.t_acct_items ai 
+where  ai.item_status = 10
+        AND ai.ACCT_TYPE = 1001
+        AND ai.ITEM_EVENT = 'COIN_FROM_DIAMEND'
+        AND ai.ADD_TIME >= date_add(curdate(), interval -1 day)
+        AND ai.ADD_TIME < curdate()
+        AND ai.USER_ID IN ( select user_id from forum.v_user_old where crt_time <date_add(curdate(), interval -1 day))
+on duplicate key update recharge_coins = values(recharge_coins);
+        
+        
+        
+## 大用户常规赠送
+insert into t_stat_coin_daily(user_type, channel_code, stat_date, common_present_coins)
+SELECT  'boss','',date_add(curdate(), interval -1 day), cast( ifnull(sum(ai.change_value),0)  as decimal(16,4) )
+from forum.t_acct_items ai 
+where ai.item_status = 10 and ai.ACCT_TYPE = 1001 
+  and ai.ADD_TIME >= date_add(curdate(), interval -1 day)  and ai.ADD_TIME < curdate()
+  and ai.user_id in (select USER_ID from forum.v_user_boss)
+  and ai.ITEM_EVENT='GET_FREE_COIN' and ai.ITEM_STATUS=10 
+  and (ai.TRADE_NO like '%BUY_SRV%' or ai.TRADE_NO like '%ADD_NOTE%' or 
+      ai.TRADE_NO like '%FOLLOW_CIRCLE%' or ai.TRADE_NO like 'USER_GJ-%' or 
+      ai.TRADE_NO like  'SIGN_%' or ai.TRADE_NO = 'BIND_BIND' 
+      or ai.TRADE_NO = 'NEWTASK1000_NEWTASK1000')
+on duplicate key update common_present_coins = values(common_present_coins);
+      
+
+        
+        
+## 新用户常规赠送
+insert into t_stat_coin_daily(user_type, channel_code, stat_date, common_present_coins)
+SELECT  'new','',date_add(curdate(), interval -1 day), cast( ifnull(sum(ai.change_value),0)  as decimal(16,4) )
+from forum.t_acct_items ai 
+where ai.item_status = 10 and ai.ACCT_TYPE = 1001 
+  and ai.ADD_TIME >= date_add(curdate(), interval -1 day)  and ai.ADD_TIME < curdate()
+  and ai.user_id in (select user_id from forum.v_user_new where crt_time >=date_add(curdate(), interval -1 day) and crt_time <curdate())
+  and ai.ITEM_EVENT='GET_FREE_COIN' and ai.ITEM_STATUS=10 
+  and (ai.TRADE_NO like '%BUY_SRV%' or ai.TRADE_NO like '%ADD_NOTE%' or 
+      ai.TRADE_NO like '%FOLLOW_CIRCLE%' or ai.TRADE_NO like 'USER_GJ-%' or 
+      ai.TRADE_NO like  'SIGN_%' or ai.TRADE_NO = 'BIND_BIND' 
+      or ai.TRADE_NO = 'NEWTASK1000_NEWTASK1000')
+on duplicate key update common_present_coins = values(common_present_coins);
+
+        
+        
+## 留存用户常规赠送
+insert into t_stat_coin_daily(user_type, channel_code, stat_date, common_present_coins)
+SELECT  'old','',date_add(curdate(), interval -1 day), cast( ifnull(sum(ai.change_value),0)  as decimal(16,4) )
+from forum.t_acct_items ai 
+where ai.item_status = 10 and ai.ACCT_TYPE = 1001 
+  and ai.ADD_TIME >= date_add(curdate(), interval -1 day)  and ai.ADD_TIME < curdate()
+  and ai.user_id in (select user_id from forum.v_user_old where crt_time <curdate())
+  and ai.ITEM_EVENT='GET_FREE_COIN' and ai.ITEM_STATUS=10 
+  and (ai.TRADE_NO like '%BUY_SRV%' or ai.TRADE_NO like '%ADD_NOTE%' or 
+      ai.TRADE_NO like '%FOLLOW_CIRCLE%' or ai.TRADE_NO like 'USER_GJ-%' or 
+      ai.TRADE_NO like  'SIGN_%' or ai.TRADE_NO = 'BIND_BIND' 
+      or ai.TRADE_NO = 'NEWTASK1000_NEWTASK1000')
+on duplicate key update common_present_coins = values(common_present_coins);
+
+        
+        
+## 大用户活动赠送
+insert into t_stat_coin_daily(user_type, channel_code, stat_date, activity_present_coins)
+SELECT  'boss','',date_add(curdate(), interval -1 day), ifnull(SUM(ai.CHANGE_VALUE),0)
+from forum.t_acct_items ai
+where ai.USER_ID not in (select user_id from forum.v_user_system) 
+and ai.item_status = 10 and ai.ACCT_TYPE = 1001 and ai.ITEM_EVENT in ('COIN_PRESENT','BUY_SERVICE_PRESENT','VIP_PRESENT','ACT_M_HOT_FREE') 
+  and ai.CHANGE_TYPE=0 and ai.ADD_TIME >= date_add(curdate(), interval -1 day)  and ai.ADD_TIME < curdate()
+  and ai.user_id in (select USER_ID from forum.v_user_boss)
+on duplicate key update activity_present_coins = values(activity_present_coins);
+  
+        
+        
+## 新用户活动赠送
+insert into t_stat_coin_daily(user_type, channel_code, stat_date, activity_present_coins)
+SELECT  'new','',date_add(curdate(), interval -1 day), ifnull(SUM(ai.CHANGE_VALUE),0)
+from forum.t_acct_items ai
+where ai.USER_ID not in (select user_id from forum.v_user_system) 
+and ai.item_status = 10 and ai.ACCT_TYPE = 1001 and ai.ITEM_EVENT in ('COIN_PRESENT','BUY_SERVICE_PRESENT','VIP_PRESENT','ACT_M_HOT_FREE') 
+  and ai.CHANGE_TYPE=0 and ai.ADD_TIME >= date_add(curdate(), interval -1 day)  and ai.ADD_TIME < curdate()
+  and ai.user_id in (select user_id from forum.v_user_new where crt_time >=date_add(curdate(), interval -1 day) and crt_time <ai.ADD_TIME < curdate())
+on duplicate key update activity_present_coins = values(activity_present_coins);
+  
+        
+        
+## 留存用户活动赠送
+insert into t_stat_coin_daily(user_type, channel_code, stat_date, activity_present_coins)
+SELECT  'old','',date_add(curdate(), interval -1 day), ifnull(SUM(ai.CHANGE_VALUE),0)
+from forum.t_acct_items ai
+where ai.USER_ID not in (select user_id from forum.v_user_system) 
+and ai.item_status = 10 and ai.ACCT_TYPE = 1001 and ai.ITEM_EVENT in ('COIN_PRESENT','BUY_SERVICE_PRESENT','VIP_PRESENT','ACT_M_HOT_FREE') 
+  and ai.CHANGE_TYPE=0 and ai.ADD_TIME >= date_add(curdate(), interval -1 day)  and ai.ADD_TIME < curdate()
+  and ai.user_id in (select user_id from forum.v_user_old where crt_time <curdate())
+on duplicate key update activity_present_coins = values(activity_present_coins);
+  
+  
+  
+        
+        
+## 大用户系统赠送
+insert into t_stat_coin_daily(user_type, channel_code, stat_date, system_present_coins)
+SELECT  'boss','',date_add(curdate(), interval -1 day), ifnull(t1.money,0) + ifnull(t2.money,0) from (select sum(p.MONEY) MONEY from t_user_present p where p.user_id in (select user_id from forum.v_user_system)
+and p.`STATUS` = 10 and p.CRT_TIME >=date_add(curdate(), interval -1 day) and p.CRT_TIME <  curdate())t1, (
+select ifnull(SUM(ai.CHANGE_VALUE),0) MONEY from forum.t_acct_items ai
+where ai.item_status = 10 and ai.ACCT_TYPE = 1001 and ai.ITEM_EVENT in ('CP_PRIZE') 
+  and ai.CHANGE_TYPE=0 and ai.ADD_TIME >= date_add(curdate(), interval -1 day)  and ai.ADD_TIME < curdate()
+  and ai.user_id in (select USER_ID from forum.v_user_boss)
+on duplicate key update system_present_coins = values(system_present_coins);
+    
+  
+  
+        
+        
+## 新用户系统赠送
+insert into t_stat_coin_daily(user_type, channel_code, stat_date, system_present_coins)
+SELECT  'new','',date_add(curdate(), interval -1 day), ifnull(t1.money,0) + ifnull(t2.money,0) from (select sum(p.MONEY) MONEY from t_user_present p where p.user_id in (select user_id from forum.v_user_system)
+and p.`STATUS` = 10 and p.CRT_TIME >=date_add(curdate(), interval -1 day) and p.CRT_TIME <  curdate())t1, (
+select ifnull(SUM(ai.CHANGE_VALUE),0) MONEY from forum.t_acct_items ai
+where ai.item_status = 10 and ai.ACCT_TYPE = 1001 and ai.ITEM_EVENT in ('CP_PRIZE') 
+  and ai.CHANGE_TYPE=0 and ai.ADD_TIME >= date_add(curdate(), interval -1 day)  and ai.ADD_TIME < curdate()
+  and ai.user_id in (select user_id from forum.v_user_new where crt_time >=date_add(curdate(), interval -1 day) and crt_time <curdate())
+on duplicate key update system_present_coins = values(system_present_coins);
+    
+  
+  
+        
+        
+## 留存用户系统赠送
+insert into t_stat_coin_daily(user_type, channel_code, stat_date, system_present_coins)
+SELECT  'old','',date_add(curdate(), interval -1 day), ifnull(t1.money,0) + ifnull(t2.money,0) from (select sum(p.MONEY) MONEY from t_user_present p where p.user_id in (select user_id from forum.v_user_system)
+and p.`STATUS` = 10 and p.CRT_TIME >=date_add(curdate(), interval -1 day) and p.CRT_TIME <  curdate())t1, (
+select ifnull(SUM(ai.CHANGE_VALUE),0) MONEY from forum.t_acct_items ai
+where ai.item_status = 10 and ai.ACCT_TYPE = 1001 and ai.ITEM_EVENT in ('CP_PRIZE') 
+  and ai.CHANGE_TYPE=0 and ai.ADD_TIME >= date_add(curdate(), interval -1 day)  and ai.ADD_TIME < curdate()
+  and ai.user_id in (select user_id from forum.v_user_old where crt_time <date_add(curdate(), interval -1 day))
+on duplicate key update system_present_coins = values(system_present_coins);
+  
+
+
+insert into t_stat_coin_daily(user_type, channel_code, stat_date, bet_all_user_coins)
+select 'boss', '', date_add(curdate(), interval -1 day),
+ifnull(cast(sum(oi.ITEM_MONEY) as decimal(10,0)),0)
+ from game.t_order_item oi
+where  oi.CHANNEL_CODE = 'GAME' and oi.ITEM_STATUS not in (-5, -10) and oi.CRT_TIME >= date_add(curdate(), interval -1 day) and oi.CRT_TIME < curdate()
+on duplicate key update bet_all_user_coins = values(bet_all_user_coins);
+
+insert into t_stat_coin_daily(user_type, channel_code, stat_date, bet_all_user_coins)
+select 'new', '', date_add(curdate(), interval -1 day),
+ifnull(cast(sum(oi.ITEM_MONEY) as decimal(10,0)),0)
+ from game.t_order_item oi
+where  oi.CHANNEL_CODE = 'GAME' and oi.ITEM_STATUS not in (-5, -10) and oi.CRT_TIME >= date_add(curdate(), interval -1 day) and oi.CRT_TIME < curdate()
+on duplicate key update bet_all_user_coins = values(bet_all_user_coins);
+
+insert into t_stat_coin_daily(user_type, channel_code, stat_date, bet_all_user_coins)
+select 'old', '', date_add(curdate(), interval -1 day),
+ifnull(cast(sum(oi.ITEM_MONEY) as decimal(10,0)),0)
+ from game.t_order_item oi
+where  oi.CHANNEL_CODE = 'GAME' and oi.ITEM_STATUS not in (-5, -10) and oi.CRT_TIME >= date_add(curdate(), interval -1 day) and oi.CRT_TIME < curdate()
+on duplicate key update bet_all_user_coins = values(bet_all_user_coins);
+
+
+
+  
+## 大用户投注人数
+insert into t_stat_coin_daily(user_type, channel_code, stat_date, bet_coins, bet_order_counts, bet_user_counts, returned_coins)
+select 'boss', '', date_add(curdate(), interval -1 day),
+ifnull(cast(sum(oi.ITEM_MONEY) as decimal(10,0)),0),
+count(1), 
+count(distinct oi.USER_ID), 
+ifnull(sum(oi.PRIZE_MONEY),0)
+ from game.t_order_item oi
+where  oi.CHANNEL_CODE = 'GAME' and oi.ITEM_STATUS not in (-5, -10) and oi.CRT_TIME >= date_add(curdate(), interval -1 day) and oi.CRT_TIME < curdate()
+and oi.USER_ID in (select USER_CODE from forum.v_user_boss)
+on duplicate key update bet_coins = values(bet_coins)
+,bet_order_counts = values(bet_order_counts)
+,bet_user_counts = values(bet_user_counts)
+,returned_coins = values(returned_coins);
+
+
+## 新用户投注人数
+insert into t_stat_coin_daily(user_type, channel_code, stat_date, bet_coins, bet_order_counts, bet_user_counts, returned_coins)
+select 'new', '', date_add(curdate(), interval -1 day),
+ifnull(cast(sum(oi.ITEM_MONEY) as decimal(10,0)),0),
+count(1), 
+count(distinct oi.USER_ID), 
+ifnull(sum(oi.PRIZE_MONEY),0)
+ from game.t_order_item oi
+where  oi.CHANNEL_CODE = 'GAME' and oi.ITEM_STATUS not in (-5, -10) and oi.CRT_TIME >= date_add(curdate(), interval -1 day) and oi.CRT_TIME < curdate()
+and oi.USER_ID in (select USER_CODE from forum.v_user_new where crt_time >=date_add(curdate(), interval -1 day) and crt_time <curdate())
+on duplicate key update bet_coins = values(bet_coins)
+,bet_order_counts = values(bet_order_counts)
+,bet_user_counts = values(bet_user_counts)
+,returned_coins = values(returned_coins);
+
+
+
+## 留存用户投注人数
+insert into t_stat_coin_daily(user_type, channel_code, stat_date, bet_coins, bet_order_counts, bet_user_counts, returned_coins)
+select 'old', '', date_add(curdate(), interval -1 day),
+ifnull(cast(sum(oi.ITEM_MONEY) as decimal(10,0)),0),
+count(1), 
+count(distinct oi.USER_ID), 
+ifnull(sum(oi.PRIZE_MONEY),0)
+ from game.t_order_item oi
+where  oi.CHANNEL_CODE = 'GAME' and oi.ITEM_STATUS not in (-5, -10) and oi.CRT_TIME >= date_add(curdate(), interval -1 day) and oi.CRT_TIME < curdate()
+and oi.USER_ID in (select USER_CODE from forum.v_user_old where crt_time < date_add(curdate(), interval -1 day))
+on duplicate key update bet_coins = values(bet_coins)
+,bet_order_counts = values(bet_order_counts)
+,bet_user_counts = values(bet_user_counts)
+,returned_coins = values(returned_coins);
+
+
+
+## 大户兑换
+insert into t_stat_coin_daily(user_type, channel_code, stat_date, redeem_coins)
+select 'boss', '', date_add(curdate(), interval -1 day), ifnull(SUM(s.CHANGE_VALUE),0)
+from forum.t_acct_items s 
+where s.ITEM_STATUS=10  and s.ITEM_EVENT = 'COIN_REDEEM'  and s.ADD_TIME >= date_add(curdate(), interval -1 day) and s.ADD_TIME < curdate()
+and s.USER_ID IN  (select USER_ID from forum.v_user_boss)
+on duplicate key update redeem_coins = values(redeem_coins);
+
+
+
+
+
+## 新用户兑换
+insert into t_stat_coin_daily(user_type, channel_code, stat_date, redeem_coins)
+select 'new', '', date_add(curdate(), interval -1 day), ifnull(SUM(s.CHANGE_VALUE),0)
+from forum.t_acct_items s 
+where s.ITEM_STATUS=10  and s.ITEM_EVENT = 'COIN_REDEEM'  and s.ADD_TIME >= date_add(curdate(), interval -1 day) and s.ADD_TIME < curdate()
+and s.USER_ID IN  (select user_id from forum.v_user_new where crt_time >=date_add(curdate(), interval -1 day) and crt_time <curdate())
+on duplicate key update redeem_coins = values(redeem_coins);
+
+
+
+
+
+
+
+## 留存用户兑换
+insert into t_stat_coin_daily(user_type, channel_code, stat_date, redeem_coins)
+select 'old', '', date_add(curdate(), interval -1 day), ifnull(SUM(s.CHANGE_VALUE),0)
+from forum.t_acct_items s 
+where s.ITEM_STATUS=10  and s.ITEM_EVENT = 'COIN_REDEEM'  and s.ADD_TIME >= date_add(curdate(), interval -1 day) and s.ADD_TIME < curdate()
+and s.USER_ID IN  (select user_id from forum.v_user_old where crt_time <date_add(curdate(), interval -1 day))
+on duplicate key update redeem_coins = values(redeem_coins);
+
+
+
+## 大用户抽奖
+insert into t_stat_lottery_daily(user_type, channel_code, stat_date, lottery_cost_coins)
+select 'boss', '', date_add(curdate(), interval -1 day), ifnull(SUM(s.CHANGE_VALUE),0)
+from forum.t_acct_items s 
+where s.ITEM_STATUS=10  and s.ITEM_EVENT = 'BUY_ACT_TIMES'  and s.ADD_TIME >= date_add(curdate(), interval -1 day) and s.ADD_TIME < curdate()
+and s.USER_ID IN  (select USER_ID from forum.v_user_boss)
+on duplicate key update lottery_cost_coins = values(lottery_cost_coins);
+;
+
+## 新用户抽奖
+insert into t_stat_lottery_daily(user_type, channel_code, stat_date, lottery_cost_coins)
+select 'new', '', date_add(curdate(), interval -1 day), ifnull(SUM(s.CHANGE_VALUE),0)
+from forum.t_acct_items s 
+where s.ITEM_STATUS=10  and s.ITEM_EVENT = 'BUY_ACT_TIMES'  and s.ADD_TIME >= date_add(curdate(), interval -1 day) and s.ADD_TIME < curdate()
+and s.USER_ID IN (select user_id from forum.v_user_new where crt_time >=date_add(curdate(), interval -1 day) and crt_time <curdate())
+on duplicate key update lottery_cost_coins = values(lottery_cost_coins);
+
+## 留存用户抽奖
+insert into t_stat_lottery_daily(user_type, channel_code, stat_date, lottery_cost_coins)
+select 'old', '', date_add(curdate(), interval -1 day), ifnull(SUM(s.CHANGE_VALUE),0)
+from forum.t_acct_items s 
+where s.ITEM_STATUS=10  and s.ITEM_EVENT = 'BUY_ACT_TIMES'  and s.ADD_TIME >= date_add(curdate(), interval -1 day) and s.ADD_TIME < curdate()
+and s.USER_ID IN (select user_id from forum.v_user_old where crt_time <date_add(curdate(), interval -1 day))
+on duplicate key update lottery_cost_coins = values(lottery_cost_coins);
+
+## 大用户抽奖返奖
+insert into t_stat_lottery_daily(user_type, channel_code, stat_date, lottery_returned_coins)
+select 'boss', '', date_add(curdate(), interval -1 day), ifnull(SUM(s.CHANGE_VALUE),0)
+from forum.t_acct_items s 
+where s.ITEM_STATUS=10  and s.ITEM_EVENT = 'ACT_PRIZE'  and s.ADD_TIME >= date_add(curdate(), interval -1 day) and s.ADD_TIME < curdate()
+and s.USER_ID IN  (select USER_ID from forum.v_user_boss)
+on duplicate key update lottery_returned_coins = values(lottery_returned_coins);
+
+## 新用户抽奖返奖
+insert into t_stat_lottery_daily(user_type, channel_code, stat_date, lottery_returned_coins)
+select 'new', '', date_add(curdate(), interval -1 day), ifnull(SUM(s.CHANGE_VALUE),0)
+from forum.t_acct_items s 
+where s.ITEM_STATUS=10  and s.ITEM_EVENT = 'ACT_PRIZE'  and s.ADD_TIME >= date_add(curdate(), interval -1 day) and s.ADD_TIME < curdate()
+and s.USER_ID IN (select user_id from forum.v_user_new where crt_time >=date_add(curdate(), interval -1 day) and crt_time <curdate())
+on duplicate key update lottery_returned_coins = values(lottery_returned_coins);
+
+## 留存用户抽奖返奖
+insert into t_stat_lottery_daily(user_type, channel_code, stat_date, lottery_returned_coins)
+select 'old', '', date_add(curdate(), interval -1 day), ifnull(SUM(s.CHANGE_VALUE),0)
+from forum.t_acct_items s 
+where s.ITEM_STATUS=10  and s.ITEM_EVENT = 'ACT_PRIZE'  and s.ADD_TIME >= date_add(curdate(), interval -1 day) and s.ADD_TIME < curdate()
+and s.USER_ID IN (select user_id from forum.v_user_old where crt_time <date_add(curdate(), interval -1 day))
+on duplicate key update lottery_returned_coins = values(lottery_returned_coins);
+
+## 大户抽奖实物支出
+insert into t_stat_lottery_daily(user_type, channel_code, stat_date, lottery_returned_award)
+select 'boss', '', date_add(curdate(), interval -1 day), ifnull(sum(a.ORIGNAL_MONEY),0)  
+from forum.t_activity_apply t join forum.t_activity_award a on t.AWARD_ID = a.AWARD_ID
+where a.AWARD_CD != 'JB'  and t.apply_time >= date_add(curdate(), interval -1 day) and t.apply_time < curdate() and t.USER_ID IN  (select USER_ID from forum.v_user_boss)
+on duplicate key update lottery_returned_award = values(lottery_returned_award);
+
+## 新户抽奖实物支出
+insert into t_stat_lottery_daily(user_type, channel_code, stat_date, lottery_returned_award)
+select 'new', '', date_add(curdate(), interval -1 day), ifnull(sum(a.ORIGNAL_MONEY),0)  
+from forum.t_activity_apply t join forum.t_activity_award a on t.AWARD_ID = a.AWARD_ID
+where a.AWARD_CD != 'JB'  and t.apply_time >= date_add(curdate(), interval -1 day) and t.apply_time < curdate() and t.USER_ID IN (select user_id from forum.v_user_new where crt_time >=date_add(curdate(), interval -1 day) and crt_time <curdate())
+on duplicate key update lottery_returned_award = values(lottery_returned_award);
+
+## 留存用户抽奖实物支出
+insert into t_stat_lottery_daily(user_type, channel_code, stat_date, lottery_returned_award)
+select 'old', '', date_add(curdate(), interval -1 day), ifnull(sum(a.ORIGNAL_MONEY),0)  
+from forum.t_activity_apply t join forum.t_activity_award a on t.AWARD_ID = a.AWARD_ID
+where a.AWARD_CD != 'JB'  and t.apply_time >= date_add(curdate(), interval -1 day) and t.apply_time < curdate() and t.USER_ID IN  (select user_id from forum.v_user_old where crt_time <date_add(curdate(), interval -1 day))
+on duplicate key update lottery_returned_award = values(lottery_returned_award);  
+
+## 大户抽奖人数
+insert into t_stat_lottery_daily(user_type, channel_code, stat_date, lottery_user_counts)
+select 'boss', '', date_add(curdate(), interval -1 day), ifnull(count(distinct(t.USER_ID)),0)
+from forum.t_activity_apply t 
+where t.apply_time >= date_add(curdate(), interval -1 day) and t.apply_time < curdate()  and t.USER_ID in (select USER_ID from forum.v_user_boss)
+on duplicate key update lottery_user_counts = values(lottery_user_counts);
+
+## 新户抽奖人数
+insert into t_stat_lottery_daily(user_type, channel_code, stat_date, lottery_user_counts)
+select 'new', '', date_add(curdate(), interval -1 day), ifnull(count(distinct(t.USER_ID)),0)
+from forum.t_activity_apply t 
+where t.apply_time >= date_add(curdate(), interval -1 day) and t.apply_time < curdate()  and t.USER_ID in(select user_id from forum.v_user_new where crt_time >=date_add(curdate(), interval -1 day) and crt_time <curdate())
+on duplicate key update lottery_user_counts = values(lottery_user_counts);
+
+## 留存用户抽奖人数
+insert into t_stat_lottery_daily(user_type, channel_code, stat_date, lottery_user_counts)
+select 'old', '', date_add(curdate(), interval -1 day),ifnull(count(distinct(t.USER_ID)),0)
+from forum.t_activity_apply t 
+where t.apply_time >= date_add(curdate(), interval -1 day) and t.apply_time < curdate()  and t.USER_ID in (select user_id from forum.v_user_old where crt_time <date_add(curdate(), interval -1 day))
+on duplicate key update lottery_user_counts = values(lottery_user_counts);

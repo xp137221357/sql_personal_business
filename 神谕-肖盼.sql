@@ -142,3 +142,7 @@ and tfc.CRT_TIME>=date_add(@beginTime,interval -(datediff(@endTime,@beginTime)+1
  where tt.charge_user_id is not null
  group by stat_time 
 )tt ;
+
+
+-- 计算时差
+SELECT TIMESTAMPDIFF(hour,'2009-9-01','2009-10-01'); 

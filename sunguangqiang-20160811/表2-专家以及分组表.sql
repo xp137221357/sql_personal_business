@@ -4,8 +4,8 @@
 -- t_expert_type
 -- 名家-7
 
-set @beginTime='2016-09-05';
-set @endTime = '2016-09-11 23:59:59';
+set @param0='2016-09-05';
+set @param1 = '2016-09-11 23:59:59';
 
 
 -- 名家
@@ -17,10 +17,9 @@ SELECT '名家',
 FROM forum.T_MATCH_RECOM w 
 INNER JOIN forum.t_expert_type_ref tf on w.user_id = tf.USER_ID and tf.TYPE_CD = 7
 INNER JOIN forum.t_user u on w.USER_ID = u.user_id and u.GROUP_TYPE in (0,2) and u.CLIENT_ID='BYAPP'
-and w.crt_time>=@beginTime
-and w.crt_time<=@endTime
+and w.crt_time>=@param0
+and w.crt_time<=@param1
 and w.status =10
--- group by statTime,w.recom_type
 ;
 
 
@@ -35,11 +34,10 @@ SELECT '名家',
  sum(tr.CRT_REWARD) '稿费支出'
 FROM forum.T_MATCH_RECOM w 
 INNER JOIN forum.t_user_match_recom tr ON tr.RECOM_ID = w.RECOM_ID and w.single_money>0
-and tr.crt_time>=@beginTime
-and tr.crt_time<=@endTime
+and tr.crt_time>=@param0
+and tr.crt_time<=@param1
 INNER JOIN forum.t_expert_type_ref tf on w.user_id = tf.USER_ID and tf.TYPE_CD = 7
 INNER JOIN forum.t_user u on w.USER_ID = u.user_id and u.GROUP_TYPE in (0,2) and u.CLIENT_ID='BYAPP'
--- group by statTime,w.recom_type
 ;
 
 
@@ -52,8 +50,8 @@ SELECT '非名家',
 FROM forum.T_MATCH_RECOM w 
 INNER JOIN forum.t_user u on w.USER_ID = u.user_id and u.GROUP_TYPE in (0,2) and u.CLIENT_ID='BYAPP'
 and u.USER_ID not in (select tf.user_id from forum.t_expert_type_ref tf  where tf.TYPE_CD = 7)
-and w.crt_time>=@beginTime
-and w.crt_time<=@endTime
+and w.crt_time>=@param0
+and w.crt_time<=@param1
 and w.status =10
 -- group by statTime,w.recom_type
 ;
@@ -68,8 +66,8 @@ SELECT '非名家',
  sum(tr.CRT_REWARD) '稿费支出'
 FROM forum.T_MATCH_RECOM w 
 INNER JOIN forum.t_user_match_recom tr ON tr.RECOM_ID = w.RECOM_ID and w.single_money>0
-and tr.crt_time>=@beginTime
-and tr.crt_time<=@endTime
+and tr.crt_time>=@param0
+and tr.crt_time<=@param1
 INNER JOIN forum.t_user u on w.USER_ID = u.user_id and u.GROUP_TYPE in (0,2) and u.CLIENT_ID='BYAPP'
 and u.USER_ID not in (select tf.user_id from forum.t_expert_type_ref tf  where tf.TYPE_CD = 7)
 -- group by statTime,w.recom_type
@@ -84,8 +82,8 @@ SELECT '合计',
  count(if(w.single_money>0,w.RECOM_ID,null)) '推荐收费场次'
 FROM forum.T_MATCH_RECOM w 
 INNER JOIN forum.t_user u on w.USER_ID = u.user_id and u.GROUP_TYPE in (0,2) and u.CLIENT_ID='BYAPP'
-and w.crt_time>=@beginTime
-and w.crt_time<=@endTime
+and w.crt_time>=@param0
+and w.crt_time<=@param1
 and w.status =10
 -- group by statTime,w.recom_type
 ;
@@ -99,8 +97,8 @@ SELECT '合计',
  sum(tr.CRT_REWARD) '稿费支出'
 FROM forum.T_MATCH_RECOM w 
 INNER JOIN forum.t_user_match_recom tr ON tr.RECOM_ID = w.RECOM_ID and w.single_money>0 
-and tr.crt_time>=@beginTime
-and tr.crt_time<=@endTime
+and tr.crt_time>=@param0
+and tr.crt_time<=@param1
 INNER JOIN forum.t_user u on w.USER_ID = u.user_id and u.GROUP_TYPE in (0,2) and u.CLIENT_ID='BYAPP';
 
 

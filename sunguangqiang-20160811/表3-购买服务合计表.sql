@@ -1,8 +1,8 @@
 -- 新增
 -- SERVICE_id 2-竞猜，5-平局，8-亚盘
 
-set @beginTime='2016-08-29';
-set @endTime = '2016-09-04 23:59:59';
+set @beginTime='2016-09-05';
+set @endTime = '2016-09-06 23:59:59';
 -- 总新增
 select '总新增',count(distinct tu.USER_ID) '新增购买服务人数',sum(tu.MONEY) '新增购买服务金额' from forum.t_user_service tu
 inner join forum.t_service ts on ts.SERVICE_id=tu.SERVICE_id and ts.SERVICE_id in (2,5,8)

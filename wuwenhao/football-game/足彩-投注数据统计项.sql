@@ -3,8 +3,8 @@
 -- 8.15 00:00:00 - 8.21 23:59:59
 -- 8.22 00:00:00 - 8.28 23:59:59
 -- 足球竞猜
-set @beginTime='2016-08-22 00:00:00';
-set @endTime = '2016-08-28 23:59:59';
+set @beginTime='2016-06-11 00:00:00';
+set @endTime = '2016-07-11 23:59:59';
 
 -- SELECT oi.CHANNEL_CODE from game.t_order_item oi GROUP BY oi.CHANNEL_CODE
 

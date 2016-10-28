@@ -22,3 +22,7 @@ t_rpt_h5_url_pv_uv_test
 t_rpt_ops_data            
 t_rpt_overview            
 t_rpt_user_cooperator_ref 
+
+
+ || user.permission.indexOf("/statAction/toDailyMoneyStat") > -1
+                || user.permission.indexOf("/statAction/toItemDataStat") > -1

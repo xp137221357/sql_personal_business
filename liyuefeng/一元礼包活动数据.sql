@@ -12,13 +12,14 @@ TRADE= LIKE 'ACT_YYLB%'
 -- 表1：活动用户人数
 
 -- 新增激活
-set @beginTime='2016-09-06';
-set @endTime='2016-09-08 23:59:59';
+set @beginTime='2016-09-26';
+set @endTime='2016-10-02 23:59:59';
 select t.PERIOD_NAME '日期',sum(t.FIRST_DNUM) '首次激活' 
 from report.t_rpt_overview t 
 where t.PERIOD_TYPE=1 and t.PERIOD_NAME>=@beginTime 
 and t.PERIOD_NAME<= @endTime
-group by PERIOD_NAME;
+-- group by PERIOD_NAME
+;
 
 -- 新增注册
 
@@ -27,7 +28,8 @@ from forum.t_user u
 where u.CRT_TIME>= @beginTime and u.CRT_TIME<= @endTime
 and u.CLIENT_ID='BYAPP'
 and u.`STATUS`=10
-group by date(u.CRT_TIME);
+-- group by date(u.CRT_TIME)
+;
 
 -- 购买一元礼包
 
@@ -42,7 +44,8 @@ and t.comments like '%ACT_YYLB%'
 and t.item_status=10
 and t.add_time >= @beginTime 
 and t.add_time<= @endTime
-group by date(t.add_time);
+-- group by date(t.add_time)
+;
 
 -- 充值
 select date(t.add_time) '日期', count(distinct t.user_id) '充值人数',sum(t.cost_value) '充值金额' 
@@ -55,7 +58,8 @@ and t.ACCT_TYPE=1003
 and t.item_status=10
 and t.add_time >= @beginTime 
 and t.add_time<= @endTime
-group by date(t.add_time);
+-- group by date(t.add_time)
+;
 
 -- ---------------------------------------------------------
 -- 表2：专家体验劵
@@ -66,7 +70,8 @@ from forum.t_user u
 where u.CRT_TIME>= @beginTime and u.CRT_TIME<= @endTime
 and u.CLIENT_ID='BYAPP'
 and u.`STATUS`=10
-group by date(u.CRT_TIME);
+-- group by date(u.CRT_TIME)
+;
 
 -- 领取人数
 
@@ -80,7 +85,8 @@ and t.ACCT_TYPE=100
 and t.item_status=10
 and t.add_time >= @beginTime 
 and t.add_time<= @endTime
-group by date(t.add_time);
+-- group by date(t.add_time)
+;
 
 -- 使用人数
 select date(t.add_time) '日期', count(distinct t.user_id) '使用人数' ,count(t.user_id) '使用次数' 
@@ -93,7 +99,8 @@ and t.ACCT_TYPE=100
 and t.item_status=10
 and t.add_time >= @beginTime 
 and t.add_time<= @endTime
-group by date(t.add_time);
+-- group by date(t.add_time)
+;
 
 -- 充值钻石人数,金额
 select date(td.crt_time) '日期', count(distinct td.charge_user_id) '充值钻石人数',sum(td.rmb_value) '充值金额'
@@ -103,7 +110,8 @@ and u.CLIENT_ID='BYAPP'
 and u.`STATUS`=10
 where td.crt_time >= @beginTime 
 and td.crt_time<= @endTime
-group by date(td.crt_time);
+-- group by date(td.crt_time)
+;
 
 
 -- -----------------------------------------------------------------
@@ -119,7 +127,8 @@ inner join report.t_trans_user_attr tu on u.USER_ID = tu.USER_ID
 and u.CRT_TIME>= @beginTime and u.CRT_TIME<= @endTime
 and u.CLIENT_ID='BYAPP'
 and u.`STATUS`=10
-group by tu.SYSTEM_MODEL;
+-- group by tu.SYSTEM_MODEL
+;
 
 -- 领取人数
 
@@ -134,7 +143,8 @@ and t.ACCT_TYPE=100
 and t.item_status=10
 and t.add_time >= @beginTime 
 and t.add_time<= @endTime
-group by tu.SYSTEM_MODEL;
+-- group by tu.SYSTEM_MODEL
+;
 
 -- 使用人数
 select concat(@beginTime,'~',@endTime)  '日期', tu.SYSTEM_MODEL '终端类型', count(distinct t.user_id) '使用人数' ,count(t.user_id) '使用次数' 
@@ -148,7 +158,8 @@ and t.ACCT_TYPE=100
 and t.item_status=10
 and t.add_time >= @beginTime 
 and t.add_time<= @endTime
-group by tu.SYSTEM_MODEL;
+-- group by tu.SYSTEM_MODEL
+;
 
 -- 充值钻石人数,金额
 select concat(@beginTime,'~',@endTime)  '日期', tu.SYSTEM_MODEL '终端类型', count(distinct td.charge_user_id) '充值钻石人数',sum(td.rmb_value) '充值金额'
@@ -159,4 +170,5 @@ and u.`STATUS`=10
 inner join report.t_trans_user_attr tu on td.charge_user_id = tu.USER_ID
 where td.crt_time >= @beginTime 
 and td.crt_time<= @endTime
-group by tu.SYSTEM_MODEL;
+-- group by tu.SYSTEM_MODEL
+;

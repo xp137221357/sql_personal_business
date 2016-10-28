@@ -113,21 +113,10 @@ from game.t_order_item oi -----------) t
 
 
 -- left join + where is null/not null实现多功能 代替 inner join
+-- left join会引起inner join 项的重复
+
 left join(
 SELECT t.charge_user_id,
-     CASE
-       WHEN Ifnull(Sum(t.rmb_value), 0) >= 0
-            AND Ifnull(Sum(t.rmb_value), 0) < 500 THEN 1
-       WHEN Ifnull(Sum(t.rmb_value), 0) >= 500
-            AND Ifnull(Sum(t.rmb_value), 0) < 1000 THEN 2
-       WHEN Ifnull(Sum(t.rmb_value), 0) >= 1000
-            AND Ifnull(Sum(t.rmb_value), 0) < 2000 THEN 3
-       WHEN Ifnull(Sum(t.rmb_value), 0) >= 2000
-            AND Ifnull(Sum(t.rmb_value), 0) < 5000 THEN 4
-       WHEN Ifnull(Sum(t.rmb_value), 0) >= 5000 
-		      AND Ifnull(Sum(t.rmb_value), 0) < 10000 THEN 5
-		 WHEN Ifnull(Sum(t.rmb_value), 0) >= 10000    THEN 6
-     end                             AS value_type,
      Ifnull(Sum(t.rmb_value), 0)     rmb_value
 FROM  t_trans_user_recharge_coin t
 GROUP  BY t.charge_user_id
@@ -144,5 +133,135 @@ and tfc.CRT_TIME>=date_add(@beginTime,interval -(datediff(@endTime,@beginTime)+1
 )tt ;
 
 
--- 计算时差
+-- 计算时差，精确到秒-- 区别datediff
 SELECT TIMESTAMPDIFF(hour,'2009-9-01','2009-10-01'); 
+
+
+-- where 里面加if判断（and作为分隔符要放到外面）
+set @param0='2016-09-14';
+set @param1='2016-09-14';
+set @param2='android';
+SELECT period_name AS period_name_v,
+      channel_no,
+      Sum(pv)     AS device_pv,
+      Sum(uv)     AS device_uv
+FROM   t_rpt_channel_pv_uv
+WHERE  period_type = '1' 
+      and if(@param2 is null,device_type in ('android','ios'),device_type=@param2 )
+      AND period_name >= @param0
+      AND period_name <= @param1
+GROUP  BY period_name,channel_no
+
+-- mysql避免重复插入(ignore)
+INSERT IGNORE INTO t_user_forbidden (ID, USER_CODE) VALUES (1424, '2694721351731021652');
+
+-- oracle 避免主键冲突
+-- insert into t_user_forbidden(ID,user_code) 
+-- select 700223 as id,'4135649778560890727' from dual
+where not exists (select 1 from t_user_forbidden t where id = t.id);
+
+-- oracle 日期处理
+-- * to_date 针对字符串
+-- * to_char 针对日期 
+-- 实在不行使用 case when end as .. +trunc(sysdate)
+SELECT To_char(To_date('&begin_date', 'yyyy-mm-dd') + (ROWNUM-1) / 24 ,
+                     'yyyy-mm-dd HH24') minute_time
+FROM   dual
+CONNECT BY ROWNUM <= 24 
+
+-- ORACLE 日期加减操作
+http://www.cnblogs.com/xiao-yu/archive/2011/05/24/2055967.html
+-- 时分秒
+select sysdate, sysdate+numtodsinterval(1,’second’) from dual ;
+-- 天
+select sysdate, sysdate+3 from dual ;
+-- 月
+select sysdate, add_months(sysdate,4) from dual ;、
+
+
+-- 持续进步
+-- case when 两种情况的妙用
+-- 1
+SELECT t.charge_user_id,
+     CASE
+       WHEN Ifnull(Sum(t.rmb_value), 0) >= 0
+            AND Ifnull(Sum(t.rmb_value), 0) < 500 THEN 1
+       WHEN Ifnull(Sum(t.rmb_value), 0) >= 500
+            AND Ifnull(Sum(t.rmb_value), 0) < 1000 THEN 2
+       WHEN Ifnull(Sum(t.rmb_value), 0) >= 1000
+            AND Ifnull(Sum(t.rmb_value), 0) < 2000 THEN 3
+       WHEN Ifnull(Sum(t.rmb_value), 0) >= 2000
+            AND Ifnull(Sum(t.rmb_value), 0) < 5000 THEN 4
+       WHEN Ifnull(Sum(t.rmb_value), 0) >= 5000 
+		      AND Ifnull(Sum(t.rmb_value), 0) < 10000 THEN 5
+		 WHEN Ifnull(Sum(t.rmb_value), 0) >= 10000    THEN 6
+     end                             AS value_type
+     
+-- 2
+SELECT
+         CASE t.pd_status
+                  WHEN 0 THEN '初始'
+                  WHEN 10 THEN '可出票'
+                  WHEN 20 THEN '票台拒收'
+                  WHEN 30 THEN '票台已收'
+                  WHEN -300 THEN 'h5限号失败'
+                  WHEN -200 THEN '票台撤单'
+                  WHEN 200 THEN '出票成功'
+                  ELSE 　　'other'
+         end AS "状态",
+         count(t.pd_projectnumber) "票数"
+FROM     v_ticket t
+WHERE    t.pd_addtime>= to_date('&start_date','yyyy-mm-dd')
+AND      t.pd_addtime< to_date('&end_date','yyyy-mm-dd')
+GROUP BY t.pd_status;
+
+-- 持续进步
+-- oracle + java
+-- 增加
+<insert id="insertNewlyFobiddenUser" parameterType="hashMap" >
+		INSERT INTO t_user_forbidden
+		<foreach collection="user_batch" separator=" union all "  item="uc">
+			select ${uc.id}, #{uc.user_code} from dual
+			where not exists (select 1 from t_user_forbidden t where t.id =${uc.id})
+		</foreach>
+</insert>
+-- 删除
+<delete id="deleteNewlyRemoveFobiddenUser" parameterType="hashMap" >
+		delete from t_user_forbidden
+		<where>
+			<if test="user_codes != null">
+				<foreach collection="user_codes" open="user_code in  (" close=")" separator="," item="uc">
+					#{uc.user_code}
+				</foreach>
+			</if>
+		</where>
+</delete>
+	
+-- 持续进步
+-- 数据查询 分组之 max,min的妙用 代替 排序
+-- 但是请注意：这种方式只能取 分组的字段 作关联条件
+select tt.crt_time,'金币',tu.SYSTEM_MODEL,tu.CHANNEL_COMPANY, tc.charge_user_id,tc.rmb_value from t_trans_user_recharge_coin tc
+inner join t_trans_user_attr tu on tc.charge_user_id = tu.USER_ID  and tu.CHANNEL_COMPANY=@channel_company
+inner join (
+select tt.charge_user_id,min(tt.crt_time) crt_time from (
+select t.charge_user_id,min(t.crt_time) crt_time from t_trans_user_recharge_coin t group by t.charge_user_id   -- where t.charge_method ='APP'
+union all
+select t.charge_user_id,min(t.crt_time) crt_time from t_trans_user_recharge_diamond t group by t.charge_user_id
+)tt where tt.crt_time>=@param0 and tt.crt_time<=@param1 group by tt.charge_user_id
+
+) tt on tc.charge_user_id = tt.charge_user_id 
+and tc.charge_method='APP'
+
+-- 我去，排序竟是这样,分组也可以这样
+order by first_dnum desc,c.reg_unum desc ,first_buy_unum desc,first_buy_amount desc 
+group by first_dnum desc,c.reg_unum desc ,first_buy_unum desc,first_buy_amount desc
+
+-- 持续进步
+-- oracle字符串截取-替换
+select REGEXP_REPLACE ('江西11x5_2016102831','[0-9][0-9][0-9]+','') from dual
+select regexp_like('1866607571','^1[3|5|8][0-9]\d{4,8}$') from dual  	--判断手机号是否合法 
+select '你好'||'是的' from dual  	--判断手机号是否合法 
+select substr("ABCDEFG", 0, 3) from dual;  --返回：ABC，截取从A开始3个字符
+select substr('OR:com.lcs.wc.placeholder.Placeholder:860825',INSTR('OR:com.lcs.wc.placeholder.Placeholder:860825',':', 1, 2)+1,length('OR:com.lcs.wc.placeholder.Placeholder:860825'))
+,INSTR('OR:com.lcs.wc.placeholder.Placeholder:860825',':', 1, 2),
+length('OR:com.lcs.wc.placeholder.Placeholder:860825') From dual;

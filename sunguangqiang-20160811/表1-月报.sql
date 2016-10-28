@@ -1,11 +1,12 @@
 -- 表一
 -- 新增充值
-set @beginTime='2016-10-17';
-set @endTime = '2016-10-23 23:59:59';
+set @beginTime='2016-09-01';
+set @endTime = '2016-09-31 23:59:59';
 
 
 -- 余额
 -- 暂时无
+
 
 -- select date_format(@beginTime,'%x%v')
 -- 充值钻石以及新增充值钻石
@@ -46,6 +47,8 @@ ON 1=1;
               
 -- 新增购买
 -- 充值钻石以及新增充值钻石
+
+
 SELECT '充值钻石以及新增充值钻石',dw.period_name_d '起始日期',dw.buy_sv_user_cnt '购买服务人数',dw.buy_sv_sum '购买服务金额',
         df.new_buy_sv_cnt '新增购买服务人数',df.first_buy_sv_sum '新增购买服务金额'
 FROM   (SELECT date(@beginTime)      period_name_d,

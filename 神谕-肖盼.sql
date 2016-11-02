@@ -257,7 +257,7 @@ order by first_dnum desc,c.reg_unum desc ,first_buy_unum desc,first_buy_amount d
 group by first_dnum desc,c.reg_unum desc ,first_buy_unum desc,first_buy_amount desc
 
 -- 持续进步
--- oracle字符串截取-替换
+-- oracle字符串截取-替换（正则表达式）
 select REGEXP_REPLACE ('江西11x5_2016102831','[0-9][0-9][0-9]+','') from dual
 select regexp_like('1866607571','^1[3|5|8][0-9]\d{4,8}$') from dual  	--判断手机号是否合法 
 select '你好'||'是的' from dual  	--判断手机号是否合法 
@@ -265,3 +265,139 @@ select substr("ABCDEFG", 0, 3) from dual;  --返回：ABC，截取从A开始3个
 select substr('OR:com.lcs.wc.placeholder.Placeholder:860825',INSTR('OR:com.lcs.wc.placeholder.Placeholder:860825',':', 1, 2)+1,length('OR:com.lcs.wc.placeholder.Placeholder:860825'))
 ,INSTR('OR:com.lcs.wc.placeholder.Placeholder:860825',':', 1, 2),
 length('OR:com.lcs.wc.placeholder.Placeholder:860825') From dual;
+
+-- 持续进步
+-- mysql根据身份证计算年龄
+SELECT FLOOR(TIMESTAMPDIFF(MONTH,substr(replace('133022 19740403 0671',' ',''),7,8),curdate())/12)
+FROM DUAL
+
+-- 持续进步
+-- mysql的正则表达式
+select * from forum.t_user u where u.NICK_NAME REGEXP 'byzq[0-9]' limit 1000
+
+-- 持续进步
+-- 使用PREPARE解决limit后面不能接变量问题以及计算
+BEGIN
+DECLARE ssql VARCHAR(10000);
+SET @rownums=0;
+SET ssql="insert into test.t1(name) values(@i) limit ?,100";
+while @i<70 do
+SET @SQUERY=ssql;
+PREPARE STMT FROM @SQUERY;
+EXECUTE STMT USING @rownums;
+SET @rownums=@rownums+1;
+end while;
+END
+
+-- 持续进步
+-- 查看事件的执行情况
+select * from mysql.`event` v where v.db='report'
+
+
+-- 持续进步
+-- 创建事件实现循环（定时执行）
+CREATE DEFINER=`forum`@`%` EVENT `me`
+	ON SCHEDULE
+		EVERY 1 DAY STARTS '2016-07-19 04:48:26'
+	ON COMPLETION NOT PRESERVE
+	ENABLE
+	COMMENT '创建事件'
+	DO
+BEGIN
+DECLARE ssql VARCHAR(10000);
+SET @rownums=0;
+SET ssql="insert into test.t1(name) values(@i) limit ?,100";
+while @i<70 do
+SET @SQUERY=ssql;
+PREPARE STMT FROM @SQUERY;
+EXECUTE STMT USING @rownums;
+SET @rownums=@rownums+1;
+end while;
+END
+
+-- 持续进步
+-- 存储过程实现循环（传参调用,用于刷数据牛）
+DELIMITER //
+CREATE DEFINER=`forum`@`%` PROCEDURE `loop8`()
+    COMMENT '创建存储过程 '
+BEGIN
+   set @rownums=0;
+	SET @select_sql = 'insert into test.t1(name) select user_id from forum.t_user limit ? ,100';
+   PREPARE stmt FROM @select_sql;
+   
+   while @rownums<1000 do
+	EXECUTE stmt using @rownums;
+   set @rownums=@rownums+100; 
+   end while; 
+	DEALLOCATE PREPARE stmt;
+END//
+DELIMITER ;
+
+call loop8() ;
+-- truncate table test.t1;
+
+-- 持续进步
+-- 使用触发器实现实时局部更新（局部更新）
+DROP TRIGGER IF EXISTS t_afterinsert_on_tab1;
+CREATE TRIGGER t_afterinsert_on_tab1 
+AFTER INSERT ON tab1
+FOR EACH ROW
+BEGIN
+     insert into tab2(tab2_id) values(new.tab1_id);
+END;
+
+-- 持续进步
+-- 各种文档的转化
+word--> text --> excel --> csv --> mysql
+
+-- 持续进步
+-- mysql导入csv数据
+LOAD DATA LOW_PRIORITY LOCAL INFILE 'D:\\data.csv'
+REPLACE INTO TABLE `test`.`t1` 
+CHARACTER SET utf8 FIELDS TERMINATED BY ',' 
+OPTIONALLY ENCLOSED BY '"' ESCAPED BY '"' 
+LINES TERMINATED BY '\r\n' 
+IGNORE 1 LINES (`id`, `name`);
+
+-- --------------------------------------------------------------------------
+-- *技术进阶（实现函数功能）
+-- mysql函数实现split函数，分割字符串 
+-- 获取分割的长度
+DELIMITER $$
+CREATE DEFINER=`forum`@`%` FUNCTION `func_get_split_string_total`(
+	f_string varchar(1000),f_delimiter varchar(5)
+) RETURNS int(11)
+BEGIN
+	return 1+(length(f_string) - length(replace(f_string,f_delimiter,'')));
+END$$
+DELIMITER ;
+-- 实现分割
+ DELIMITER $$
+ CREATE DEFINER=`forum`@`%` FUNCTION `func_get_split_string`(
+ f_string varchar(1000),f_delimiter varchar(5),f_order int) RETURNS varchar(255) CHARSET utf8
+ BEGIN
+   declare result varchar(255) default '';
+   set result = reverse(substring_index(reverse(substring_index(f_string,f_delimiter,f_order)),f_delimiter,1));
+   return result;
+ END$$
+ DELIMITER ;
+-- 测试：
+ DELIMITER $$
+ CREATE PROCEDURE `sp_print_result`(
+  IN f_string varchar(1000),IN f_delimiter varchar(5)
+ )
+ BEGIN
+   declare cnt int default 0;
+   declare i int default 0;
+   set cnt = func_get_split_string_total(f_string,f_delimiter);
+   drop table if exists tmp_print;
+   create temporary table tmp_print (num int not null);
+   while i < cnt
+   do
+     set i = i + 1;
+     insert into tmp_print(num) values (func_get_split_string(f_string,f_delimiter,i));
+   end while;
+   select * from tmp_print;  
+ END$$
+ DELIMITER ;
+ -- --------------------------------------------------------------------------------------

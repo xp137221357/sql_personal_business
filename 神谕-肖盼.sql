@@ -359,6 +359,11 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '"'
 LINES TERMINATED BY '\r\n' 
 IGNORE 1 LINES (`id`, `name`);
 
+ -- 持续进步
+ -- 批量更新
+ sql_content=sql_content+' select ip,"'+city_name+'" from test.t_stat_ip_test where ip= "'+ ip[0] +'" union all '
+ cur.execute("insert INTO test.t_stat_ip_test (ip,city_name)"+sql_content+" on duplicate key update city_name = values(city_name)")
+
 -- --------------------------------------------------------------------------
 -- *技术进阶（实现函数功能）
 -- mysql函数实现split函数，分割字符串 
@@ -400,4 +405,11 @@ DELIMITER ;
    select * from tmp_print;  
  END$$
  DELIMITER ;
+ 
+ -- 根据需求另外的探索方案 (将ip转化为数值)
+set @ip='12.23.45.56';
+SELECT round(SUBSTRING_INDEX(@ip,'.',1)+
+       SUBSTRING_INDEX(SUBSTRING_INDEX(@ip,'.',2),'.',-1)/1000+
+       SUBSTRING_INDEX(SUBSTRING_INDEX(@ip,'.',3),'.',-1)/1000000+
+       SUBSTRING_INDEX(SUBSTRING_INDEX(@ip,'.',4),'.',-1)/1000000000,9) from dual
  -- --------------------------------------------------------------------------------------

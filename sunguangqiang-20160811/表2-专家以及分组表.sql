@@ -4,16 +4,18 @@
 -- t_expert_type
 -- 名家-7
 
-set @beginTime='2016-10-17';
+set @beginTime='2016-10-01';
 set @endTime = '2016-10-23 23:59:59';
 
 
 -- 名家
--- 发起推荐人数，推荐次数，推荐收费场次
+-- 发起推荐人数，推荐次数，推荐收费次数
 SELECT '名家',
  COUNT(DISTINCT(w.USER_ID)) '发起推荐人数',
  count(w.RECOM_ID) '推荐次数',
- count( if(w.single_money>0,w.RECOM_ID,null)) '推荐收费场次'
+ count( if(w.single_money>0,w.RECOM_ID,null)) '推荐收费次数',
+ count(distinct w.Match_ID) '推荐场次',
+ count(distinct if(w.single_money>0,w.Match_ID,null)) '推荐收费场次'
 FROM forum.T_MATCH_RECOM w 
 INNER JOIN forum.t_expert_type_ref tf on w.user_id = tf.USER_ID and tf.TYPE_CD = 7
 INNER JOIN forum.t_user u on w.USER_ID = u.user_id and u.GROUP_TYPE in (0,2) and u.CLIENT_ID='BYAPP'
@@ -22,6 +24,17 @@ and w.crt_time<=@endTime
 and w.status =10
 ;
 
+SELECT '名家',
+ '推荐场次-推荐收费场次',
+ count(distinct w.Match_ID) '推荐场次',
+ count(distinct if(w.single_money>0,w.Match_ID,null)) '推荐收费场次'
+FROM forum.T_MATCH_RECOM w 
+INNER JOIN forum.t_expert_type_ref tf on w.user_id = tf.USER_ID and tf.TYPE_CD = 7
+INNER JOIN forum.t_user u on w.USER_ID = u.user_id and u.GROUP_TYPE in (0,2) and u.CLIENT_ID='BYAPP'
+and w.crt_time>=@beginTime
+and w.crt_time<=@endTime
+and w.status =10
+;
 
 
 -- 购买人数 	购买次数 	购买金额 	人均购买金额 	网站收入 	稿费支出
@@ -44,9 +57,11 @@ INNER JOIN forum.t_user u on w.USER_ID = u.user_id and u.GROUP_TYPE in (0,2) and
 -- 非名家----------------------------------------------------------------------
 -- 发起推荐人数，推荐次数，推荐收费场次
 SELECT '非名家',
- COUNT(DISTINCT(w.USER_ID)) '发起推荐人数',
+  COUNT(DISTINCT(w.USER_ID)) '发起推荐人数',
  count(w.RECOM_ID) '推荐次数',
- count(if(w.single_money>0,w.RECOM_ID,null)) '推荐收费场次'
+ count( if(w.single_money>0,w.RECOM_ID,null)) '推荐收费次数',
+ count(distinct w.Match_ID) '推荐场次',
+ count(distinct if(w.single_money>0,w.Match_ID,null)) '推荐收费场次'
 FROM forum.T_MATCH_RECOM w 
 INNER JOIN forum.t_user u on w.USER_ID = u.user_id and u.GROUP_TYPE in (0,2) and u.CLIENT_ID='BYAPP'
 and u.USER_ID not in (select tf.user_id from forum.t_expert_type_ref tf  where tf.TYPE_CD = 7)
@@ -79,7 +94,9 @@ and u.USER_ID not in (select tf.user_id from forum.t_expert_type_ref tf  where t
 SELECT '合计',
  COUNT(DISTINCT(w.USER_ID)) '发起推荐人数',
  count(w.RECOM_ID) '推荐次数',
- count(if(w.single_money>0,w.RECOM_ID,null)) '推荐收费场次'
+ count( if(w.single_money>0,w.RECOM_ID,null)) '推荐收费次数',
+ count(distinct w.Match_ID) '推荐场次',
+ count(distinct if(w.single_money>0,w.Match_ID,null)) '推荐收费场次'
 FROM forum.T_MATCH_RECOM w 
 INNER JOIN forum.t_user u on w.USER_ID = u.user_id and u.GROUP_TYPE in (0,2) and u.CLIENT_ID='BYAPP'
 and w.crt_time>=@beginTime

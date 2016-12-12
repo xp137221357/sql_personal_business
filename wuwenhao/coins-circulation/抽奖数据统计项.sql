@@ -1,5 +1,5 @@
-set @beginTime='2016-08-08 00:00:00';
-set @endTime = '2016-08-08 23:59:59';			  
+set @beginTime='2016-11-14 00:00:00';
+set @endTime = '2016-11-15 23:59:59';			  
 -- 用户抽奖
 select 'P','金币抽奖',concat(@beginTime,'~',@endTime) '时间','all', ifnull(SUM(ai.CHANGE_VALUE),0) '金币'  from forum.t_acct_items ai
  where ai.ITEM_STATUS=10 and ai.ITEM_EVENT = 'BUY_ACT_TIMES' and ai.ACCT_TYPE in (1001) 
@@ -30,3 +30,6 @@ select 'P','用户抽奖实物支出',concat(@beginTime,'~',@endTime) '时间','
   from forum.t_activity_apply t 
   inner join forum.t_activity_award a on t.AWARD_ID = a.AWARD_ID
   and a.AWARD_CD != 'JB' and t.apply_time>=@beginTime and t.apply_time<= @endTime ;
+
+  
+  

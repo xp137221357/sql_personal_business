@@ -2,8 +2,8 @@
 
 
 ## 激活设备数
-set @bt:='2016-09-13';
-set @et:='2016-09-19 23:59:59';
+set @bt:='2016-10-01';
+set @et:='2016-10-06 23:59:59';
 select '激活设备数',concat(@bt,'~',@et)  value1,count(1) value2 from forum.t_device_info di 
 inner join forum.t_user u on u.USER_CODE = di.USER_CODE
 LEFT JOIN forum.t_user_freeze_log t  ON u.USER_ID=T.USER_ID AND t.reason like '%一元活动(刷子)%' and t.OPT_USER='sys'

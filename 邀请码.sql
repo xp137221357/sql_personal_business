@@ -5,9 +5,6 @@ set @invite_code = '01036947';
 
 
 
-
-
-
 select ai.* from game.t_user_ext t  
 inner join forum.t_user u on u.USER_CODE = t.USER_ID and t.INVITE_CODE='01036947'
 inner join forum.t_acct_items ai on ai.USER_ID=u.USER_ID and ai.add_time >= @beginTime

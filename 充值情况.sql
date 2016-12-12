@@ -81,4 +81,8 @@ inner join forum.t_user u on u.USER_ID = t.user_id
 inner join forum.t_user_event te on te.USER_ID = u.user_id and te.EVENT_CODE='REG' 
 inner join forum.t_device_channel tdc on te.CHANNEL_NO = tdc.CHANNEL_NO and tdc.COMPANY_NAME = '百盈'
  
- 
+ -- 原始官方充值
+select sum(ai.CHANGE_VALUE) from forum.t_acct_items ai 
+where  
+ai.ADD_TIME >= @param0  and ai.ADD_TIME <= @param1
+and (ai.ITEM_EVENT='COIN_FROM_DIAMEND' or (ai.ITEM_EVENT='buy_dimend' and ai.COMMENTS is not null and ai.COMMENTS like '%buy_coin%'))

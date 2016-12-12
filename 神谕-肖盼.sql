@@ -1,6 +1,13 @@
 set @beginTime='2016-07-11';
 set @endTime = '2016-07-16';
 
+-- 注意一些坑
+-- 0!=null
+-- 1>null = null 
+-- nuLL+1=null
+-- sum(null)=null
+-- sum(0,null)!=null
+
 select oi.USER_ID,oi.IS_INPLAY,tm.LEAGUE_LEVEL,
 	sum(if(oi.IS_INPLAY=1 and tm.LEAGUE_LEVEL=1,oi.ITEM_MONEY,0)) first_league_pre_bet,
 	sum(if(oi.IS_INPLAY=1 and tm.LEAGUE_LEVEL!=1,oi.ITEM_MONEY,0)) other_league_pre_bet,
@@ -16,16 +23,11 @@ select oi.USER_ID,oi.IS_INPLAY,tm.LEAGUE_LEVEL,
 	and oi.CRT_TIME >= @beginTime and oi.CRT_TIME < @endTime
    GROUP BY oi.USER_ID
    
-   
-   
 SELECT 
 COUNT( DISTINCT IF(vs.user_type=21 AND vs.STATUS = 10, vs.user_id,null)) vip1
 FROM t_user_vip_srv vs
 WHERE vs.pay_status = 10 AND vs.CRT_TIME <= '2016-07-27' AND vs.CRT_TIME >= '2016-01-01';
 
-	
-	
-	
 -- sql比较差异
 select * from (
 select 
@@ -43,9 +45,7 @@ AND tc.crt_time>=@beginTime
 AND tc.crt_time<=@endTime) b on a.user_id=b.charge_user_id
 where b.charge_user_id is null;
 
-
-
--- 分足求和
+-- 分组求和
 select 
 ts.stat_date,
 ifnull(sum(ts.fore_asserts),0)
@@ -111,9 +111,12 @@ round(sum(oi.COIN_BUY_MONEY)) bet_coins,
 round(sum(oi.COIN_PRIZE_MONEY)) return_coins
 from game.t_order_item oi -----------) t
 
-
+-- 持续进步
 -- left join + where is null/not null实现多功能 代替 inner join
 -- left join会引起inner join 项的重复
+
+-- left/right关联表格时（嫁接实体或union all可处理）
+-- 务必注注意处理无数据的情况,否则会丢失被关联数据
 
 left join(
 SELECT t.charge_user_id,
@@ -265,6 +268,27 @@ select substr("ABCDEFG", 0, 3) from dual;  --返回：ABC，截取从A开始3个
 select substr('OR:com.lcs.wc.placeholder.Placeholder:860825',INSTR('OR:com.lcs.wc.placeholder.Placeholder:860825',':', 1, 2)+1,length('OR:com.lcs.wc.placeholder.Placeholder:860825'))
 ,INSTR('OR:com.lcs.wc.placeholder.Placeholder:860825',':', 1, 2),
 length('OR:com.lcs.wc.placeholder.Placeholder:860825') From dual;
+-- mysql
+replace('133022 19740403 0671',' ','')
+-- 类似与indexof
+LOCATE('p','xiaopan')
+position('b' IN 'abcd')
+INSTR('abcd', 'b')
+select substr('xiaopanq',locate('p','xiaopanq')+1,locate('q','xiaopanq')-locate('p','xiaopanq')-1)
+update t_job t set t.table_name=substr(t.job_name,locate('[',t.job_name)+1,locate(']',t.job_name)-locate('[',t.job_name)-1)
+
+
+-- mysql字符串与数字的转化
+方法一：SELECT '123'+0; 
+方法二：SELECT CONVERT('123',SIGNED);
+方法三：SELECT CAST('123' AS SIGNED);
+-- 四舍五入 round
+-- 向上取整 ceil
+-- 向下取整 floor
+
+-- 持续进步
+-- 注意(时间)
+now() = curdate()+curtime()
 
 -- 持续进步
 -- mysql根据身份证计算年龄
@@ -332,7 +356,9 @@ BEGIN
 	DEALLOCATE PREPARE stmt;
 END//
 DELIMITER ;
-
+-- 注意参数
+一个'?'对应一个参数
+?,?<-->EXECUTE stmt using @time_day,@time_day1;
 call loop8() ;
 -- truncate table test.t1;
 
@@ -347,11 +373,13 @@ BEGIN
 END;
 
 -- 持续进步
--- 各种文档的转化
-word--> text --> excel --> csv --> mysql
-
--- 持续进步
 -- mysql导入csv数据
+0.原始文件:word--> text --> excel --> csv --> mysql
+1.忽略行
+2.处理冲突行
+3.格式化数据方式
+4.控制字符分隔符
+5.目标表以及字段
 LOAD DATA LOW_PRIORITY LOCAL INFILE 'D:\\data.csv'
 REPLACE INTO TABLE `test`.`t1` 
 CHARACTER SET utf8 FIELDS TERMINATED BY ',' 
@@ -359,10 +387,15 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '"'
 LINES TERMINATED BY '\r\n' 
 IGNORE 1 LINES (`id`, `name`);
 
- -- 持续进步
- -- 批量更新
- sql_content=sql_content+' select ip,"'+city_name+'" from test.t_stat_ip_test where ip= "'+ ip[0] +'" union all '
- cur.execute("insert INTO test.t_stat_ip_test (ip,city_name)"+sql_content+" on duplicate key update city_name = values(city_name)")
+-- 持续进步
+-- insert结合duplicate批量更新
+sql_content=sql_content+' select ip,"'+city_name+'" from test.t_stat_ip_test where ip= "'+ ip[0] +'" union all '
+cur.execute("insert INTO test.t_stat_ip_test (ip,city_name)"+sql_content+" on duplicate key update city_name = values(city_name)")
+-- update结合join批量更新
+update user_mobile_brand_2016_10_11 t1
+inner join forum.t_device_info ti 
+on t1.DEVICE_CODE = ti.DEVICE_CODE and t1.DEVICE_CODE='eead73c1c7cc4cf6cea2b9236fe165ce' 
+set t1.mobile_brand=ti.MOBILE_VERSION
 
 -- --------------------------------------------------------------------------
 -- *技术进阶（实现函数功能）
@@ -413,3 +446,9 @@ SELECT round(SUBSTRING_INDEX(@ip,'.',1)+
        SUBSTRING_INDEX(SUBSTRING_INDEX(@ip,'.',3),'.',-1)/1000000+
        SUBSTRING_INDEX(SUBSTRING_INDEX(@ip,'.',4),'.',-1)/1000000000,9) from dual
  -- --------------------------------------------------------------------------------------
+
+-- *技术进阶（优化）
+-- 优化的实质（茅塞顿开）
+-- 1.尽量关联最少的数据
+-- 2.尽量使用计算最小的函数
+-- 3.尽量拆分大数据的计算

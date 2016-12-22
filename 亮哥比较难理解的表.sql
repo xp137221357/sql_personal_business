@@ -25,3 +25,13 @@ t_code 罗列了所有的券种类
 账务表： t_account_item_snap t 账务变动记录
 
 game.t_order_item 里面的oder_id指的是订单号,item_id表示具体项目 id,pay_time 投注时间,balance_time计算时间
+10 初始状态
+-5  退款中
+-10 已退款
+210 退款成功
+-100:未中奖
+100:结算中 
+110:已返奖
+120:走盘
+130:输一半
+140:赢一半

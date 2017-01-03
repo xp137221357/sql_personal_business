@@ -35,3 +35,9 @@ game.t_order_item 里面的oder_id指的是订单号,item_id表示具体项目 i
 120:走盘
 130:输一半
 140:赢一半
+
+-- 活动列表
+FROM forum.t_activity_award td
+inner join forum.t_act_award_ref r on r.AWARD_ID=td.AWARD_ID
+inner join forum.t_activity taa on r.ACT_ID=taa.ACT_ID
+inner join forum.t_activity_apply ta ta.ACT_ID=taa.ACT_ID

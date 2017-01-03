@@ -1,5 +1,5 @@
-set @beginTime='2016-10-17';
-set @endTime = '2016-10-23 23:59:59';
+set @beginTime='2016-12-19';
+set @endTime = '2016-12-25 23:59:59';
 
 
 select count(distinct ai.USER_ID) 购买服务人数, sum(ai.CHANGE_VALUE) '服务金额'

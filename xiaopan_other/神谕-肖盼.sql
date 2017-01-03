@@ -349,7 +349,7 @@ BEGIN
 DECLARE ssql VARCHAR(10000);
 SET @rownums=0;
 SET ssql="insert into test.t1(name) values(@i) limit ?,100";
-while @i<70 do
+while @rownums<70 do
 SET @SQUERY=ssql;
 PREPARE STMT FROM @SQUERY;
 EXECUTE STMT USING @rownums;
@@ -389,7 +389,7 @@ end while label1;
 END
 
 -- 持续进步
--- 存储过程实现循环进阶（传参调用）
+-- 存储过程实现循环进阶（limit 传参调用）
 DELIMITER //
 CREATE DEFINER=`forum`@`%` PROCEDURE `loop8`()
     COMMENT '创建存储过程 '
@@ -508,25 +508,42 @@ SHOW VARIABLES LIKE "group_concat_max_len";
 SET GLOBAL group_concat_max_len=102400;
 SET SESSION group_concat_max_len=102400; 
 
+set @param0='2016-12-21';
+set @param1='2016-12-22 23:30:00';
+set @param3=18; -- 24
+
 SET @sql = NULL;
-SET @stuid = '1003';
 SELECT
  GROUP_CONCAT(DISTINCT
   CONCAT(
-   'MAX(IF(c.coursenm = ''',
-   c.coursenm,
-   ''', s.scores, 0)) AS ''',
-   c.coursenm, ''''
+   'COUNT(IF(td.AWARD_ID = ''',
+   td.AWARD_ID,
+   ''', 1, NULL)) AS ''',
+   td.AWARD_NAME, ''''
   )
  ) INTO @sql
-FROM courses c;
- 
-SET @sql = CONCAT('Select st.stuid, st.stunm, ', @sql, 
-            ' From Student st 
-            Left Join score s On st.stuid = s.stuid
-            Left Join courses c On c.courseno = s.courseno
-            Where st.stuid = ''', @stuid, '''
-            Group by st.stuid');
+FROM forum.t_activity_award td
+inner join forum.t_act_award_ref r on r.AWARD_ID=td.AWARD_ID
+inner join forum.t_activity taa on r.ACT_ID=taa.ACT_ID
+where taa.ACT_ID=18;
+
+SET @sql =CONCAT('
+select 
+date_format(ta.APPLY_TIME,''','%Y-%m-%d',''') stat_time,
+taa.ACT_TITLE 期号,
+count(distinct ta.USER_ID) 参与人数,
+count(1) 参与次数,
+ta.COIN 金币,
+ta.PCOIN 体验币,'
+, @sql,'
+ from forum.t_activity_apply ta 
+inner join forum.t_activity taa on ta.ACT_ID=taa.ACT_ID
+inner join forum.t_activity_award td on ta.AWARD_ID=td.AWARD_ID
+inner join forum.t_user u on ta.USER_ID = u.user_id 
+where ta.APPLY_STATUS in (10,20) 
+and ta.APPLY_TIME>=''',@param0,
+''' and ta.APPLY_TIME<=''',@param1,
+''' group by stat_time,taa.ACT_TITLE');
 PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;

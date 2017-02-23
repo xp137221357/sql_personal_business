@@ -1,6 +1,6 @@
 
-set @beginTime='2016-12-20 00:00:00';
-set @endTime = '2016-12-20 23:59:59';
+set @beginTime='2017-01-10 00:00:00';
+set @endTime = '2017-01-10 23:59:59';
 
 select 
 t1.stat_time,
@@ -17,7 +17,7 @@ round(sum(ifnull(oi.P_COIN_BUY_MONEY,0))) bet_p_coins,
  round(sum(ifnull(oi.COIN_BUY_MONEY,0))+sum(ifnull(oi.P_COIN_BUY_MONEY,0))) bet_all_coins
   from game.t_order_item oi
 where  
-oi.CHANNEL_CODE = 'GAME' and oi.ITEM_STATUS not in (-5, -10 , 210)
+oi.CHANNEL_CODE = 'GAME' and oi.ITEM_STATUS -- not in (-5, -10 , 210)
 and oi.CRT_TIME >= @beginTime and oi.CRT_TIME <= @endTime
 group by stat_time
 ) t1
@@ -27,7 +27,8 @@ round(sum(ifnull(oi.COIN_PRIZE_MONEY,0))) return_coins,
 round(sum(ifnull(oi.P_COIN_PRIZE_MONEY,0))) return_p_coins,
  round(sum(ifnull(oi.COIN_PRIZE_MONEY,0))+sum(ifnull(oi.P_COIN_PRIZE_MONEY,0))) return_all_coins
  from game.t_order_item oi 
-where  oi.CHANNEL_CODE = 'GAME' and oi.ITEM_STATUS not in (-5, -10 , 210) 
+where  oi.CHANNEL_CODE = 'GAME' -- and oi.ITEM_STATUS not in (-5, -10 , 210) 
+and oi.BALANCE_STATUS=20
 and oi.BALANCE_TIME >= @beginTime and oi.BALANCE_TIME <= @endTime
 group by stat_time
 )t2 
@@ -35,13 +36,12 @@ on t1.stat_time=t2.stat_time
 ;
 
 
-
-select '2016-12-20' stat_time,
+select @beginTime stat_time,
 round(sum(if(ai.CHANGE_TYPE=0,if(ai.ACCT_TYPE=1001,ai.CHANGE_VALUE,0),if(ai.ACCT_TYPE=1001,-ai.CHANGE_VALUE,0)))) football_coins_consume,
 round(sum(if(ai.CHANGE_TYPE=0,if(ai.ACCT_TYPE=1015,ai.CHANGE_VALUE,0),if(ai.ACCT_TYPE=1015,-ai.CHANGE_VALUE,0)))) football_free_consume 
 from forum.t_acct_items ai
-where ai.ADD_TIME>='2016-12-20'
-and ai.ADD_TIME<=concat('2016-12-20',' 23:59:59')
+where ai.ADD_TIME>=@beginTime
+and ai.ADD_TIME<=@endTime
 and ai.ACCT_TYPE in (1001,1015) 
 and ai.ITEM_EVENT in ('trade_coin','prize_coin')
 and ai.USER_ID not in (select user_id from report.v_user_system)

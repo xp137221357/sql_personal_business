@@ -184,6 +184,11 @@ select sysdate, sysdate+3 from dual ;
 -- 月
 select sysdate, add_months(sysdate,4) from dual ;
 
+-- oracle日期操作实例
+select to_char(sysdate+1/2,'yyyy-mm-dd HH24:MI:SS') from dual;
+select to_date('2017-02-21 17:59:00','yyyy-mm-dd HH24:MI:SS') from dual
+select sysdate+1,sysdate+1/2 from dual
+
 
 -- ORACLE 条件语句的查询
 
@@ -322,12 +327,12 @@ select * from forum.t_user u where u.NICK_NAME REGEXP 'byzq[0-9]' limit 1000
 BEGIN
 DECLARE ssql VARCHAR(10000);
 SET @rownums=0;
-SET ssql="insert into test.t1(name) values(@i) limit ?,100";
-while @i<70 do
+SET ssql="insert into test.t1(name) values(@i) limit ?,1000";
+while @rownums<10000 do
 SET @SQUERY=ssql;
 PREPARE STMT FROM @SQUERY;
 EXECUTE STMT USING @rownums;
-SET @rownums=@rownums+1;
+SET @rownums=@rownums+1000;
 end while;
 END
 
@@ -547,3 +552,27 @@ and ta.APPLY_TIME>=''',@param0,
 PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
+
+
+-- 技术进阶（时间戳转化）
+-- oracle
+select t.ACC_NAME||'_',t.MONEY*0.01,t.MONEY_AFTER*0.01,TO_DATE('19700101','yyyymmdd') + ((t.MOD_TIME+28800000)/1000/24/60/60),TO_DATE('19700101','yyyymmdd') + ((t.CRT_TIME+28800000)/1000/24/60/60) 
+from v_account_translog t 
+where TO_DATE('19700101','yyyymmdd') + ((t.CRT_TIME+28800000)/1000/24/60/60) >= to_date( '2017-01-03' ||' 00:00:00','yyyy-mm-dd hh24:mi:ss')
+and TO_DATE('19700101','yyyymmdd') + ((t.CRT_TIME+28800000)/1000/24/60/60) <= to_date('2017-01-03' ||' 23:59:59','yyyy-mm-dd hh24:mi:ss') 
+and t.ITEM_TYPE = 1001 AND T.STATUS = 10 and t.ACC_NAME='7716023238115907843'
+order by t.CRT_TIME asc ;
+
+-- mysql
+select FROM_UNIXTIME('1468078828','%Y-%m-%d %H:%i:%S');
+
+-- oracle(快照回闪)
+
+SELECT ITEM_TYPE ITEM_TYPE, SUM(ACCT_BALANCE + FREEZE_MONEY) / 100 BALANCE
+    FROM V_ACCOUNT_ITEM as of timestamp trunc(sysdate)
+    where ITEM_TYPE in (1001, 1015)
+    group by ITEM_TYPE
+
+-- 整体运营数据分组
+-- 按天分组，按小时分组
+-- 通过时间偏移来达到 天与小时分组的组合分组

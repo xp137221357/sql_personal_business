@@ -1,0 +1,46 @@
+-- 
+
+金币往事
+前提:剥离 可以变动的 三个系统账号
+充值=商城官充+后台官充+第三方充值
+由于官方不能直接充值金币，
+-->金币的充值=充值钻石+钻石转为金币,
+   其中充值钻石(item_event =BUY_DIAMEND)
+   对应的comments里面可以区分充值的目的是金币还是钻石
+
+官充：
+--> item_event =BUY_DIAMEND and comments like (条件)
+	官充钻石
+--> item_event =DIAMEND_TO_COIN 
+	转化为金币，扣除钻石
+--> item_event =COIN_FROM_DIAMEND 
+	转化为金币，增加金币
+	
+后台充值：
+--> item_event =ADMIN_USER_OPT and comment like '%网银充值%' 
+    后台充值，(pay_time为金币到帐时间)
+--> item_event =BUY_DIAMEND and comment like '%underline%' 
+	转化为官充钻石(pay_time为人民币到帐时间)
+--> item_event =DIAMEND_TO_COIN comment like '%underline%' 
+	转化为金币，扣除钻石(为了钻石的进出平衡)
+--> item_event =COIN_FROM_DIAMEND comment like '%underline%' 
+	转化为金币，增加金币(为了金币的进出平衡)
+	
+-- 为什么不将DIAMEND_TO_COIN与COIN_FROM_DIAMEND统一？
+	操作的对象不一样
+	DIAMEND_TO_COIN--针对钻石,ACCT_TYPE=1003
+	COIN_FROM_DIAMEND--针对金币,ACCT_TYPE=1001
+-- 为什么不通过ACCT_TYPE来区分？
+	ACCT_TYPE的值可能会变，
+	当余额不足时币种的切换，
+	导致了ACCT_TYPE不能作为唯一索引的一部分，
+	由于钻石与金币的随业务切换，
+	官充金额=官充的钻石金额+官充的金币金额,
+	官充的钻石金额！=官充的钻石数对应金额,
+	官充的金币金额！=官充的金币数对应金额,
+	所以金币与钻石的流动需要具体业务具体分析！
+
+第三方充值：
+-->币商<-->普通用户
+-->充值金币=答题+转账(币商-->普通用户)
+-->金币提现=答题+转账(普通用户-->币商)

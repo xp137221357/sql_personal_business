@@ -1,0 +1,6 @@
+python学习：
+1.Beautiful Soup 是用Python写的一个HTML/XML的解析器，它可以很好的处理不规范标记并生成剖析树(parse tree)； 它提供简单又常用的导航（navigating），搜索以及修改剖析树的操作。它可以大大节省你的编程时间；
+2.re是python中正则表达式的模块；
+3.python2中的urllib在python3中分为urllib.request和urllib.error；
+4.python打开文件，保存文件，读取文件；
+5.python获取网页内容；

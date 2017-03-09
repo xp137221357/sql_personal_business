@@ -1,0 +1,11 @@
+select b.com_a, b.com_b, bm.league_id,
+sum(if((b.difference < 0 and b.rst = b.odds_item) or (b.difference > 0 and b.rst != b.odds_item), 1, 0)) perfer_a,
+sum(if((b.difference > 0 and b.rst = b.odds_item) or (b.difference < 0 and b.rst != b.odds_item), 1, 0)) perfer_b,
+count(1)
+ from ana_job13_b b
+ inner join bets_match bm 
+ on b.match_id = bm.id 
+where b.difference != 0
+group by b.com_a, b.com_b, bm.league_id
+having count(1) > 20
+order by sum(if((b.difference < 0 and b.rst = b.odds_item) or (b.difference > 0 and b.rst != b.odds_item), 1, 0)) / count(1) desc

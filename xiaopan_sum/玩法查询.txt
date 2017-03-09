@@ -1,0 +1,38 @@
+
+public int PLAY_ID_BLEND=70199; //混投
+
+public int PLAY_ID_GOAL_EUROPE_SPF=70101;//全场欧赔胜平负
+
+public int PLAY_ID_GOAL_ASIAN_SF=70102; //全场亚盘胜负
+
+public int PLAY_ID_GOAL_SCORE=70103; //全场比分
+
+public int PLAY_ID_GOAL_BIG_SMALL=70104; //全场大小球
+
+public int PLAY_ID_GOAL_TOTAL_SCORE=70105; //全场进球区间
+
+public int PLAY_ID_FH_EUROPE_SPF=70111;//半场欧赔胜平负
+
+public int PLAY_ID_FH_ASIAN_SF=70112;//半场亚盘胜负
+
+public int PLAY_ID_FH_SCORE=70113;//半场比分
+
+public int PLAY_ID_FH_BIG_SMALL=70114;//半场大小球
+
+public int PLAY_ID_FH_TOTAL_SCORE=70115;//半场进球区间
+
+public int PLAY_ID_GOAL_CORNER=70130;//全场角球数
+
+public int PLAY_ID_GOAL_CARD=70131;//全场罚牌数
+
+public int PLAY_ID_GOAL_ODD_EVEN=70133;//全场进球单双
+
+public int PLAY_ID_FH_CORNER=70140;//半场角球数
+
+public int PLAY_ID_FH_CARD=70141;//半场罚牌数
+
+public int PLAY_ID_FH_ODD_EVEN=70143;//半场进球单双
+
+public int PLAY_ID_FH_GOAL=70150;//半全场
+
+public int PLAY_ID_NEXT_GOAL=70160;//下一个进球

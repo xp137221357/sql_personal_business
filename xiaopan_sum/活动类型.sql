@@ -31,30 +31,6 @@
 "BUY_VIP"-购买VIP服务
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 移动活动抽奖送金币和钻石
 item_event:ACT_L_CMCC
 
@@ -65,3 +41,15 @@ ITEM_EVENT：USER_TASK_LOTTERY  任务体系抽奖获得
 ITEM_TYPE：CLUBS_CREATE//创建
 CLUBS_RENEW//续期
 CLUBS_LEVEL//升级
+
+
+ROOM_ADD_ASSETS_TRANSFER  房间场追加资产
+ROOM_CREATE_TRANSFER  创建房间
+ROOM_PACKET_TRADE  发起红包
+PACKET_RECIVE  领取红包
+PCKET_EXPIRE  红包到期退款
+ROOM_CLOSE_TRANSFER  房间关闭退款
+RE_ROOM_MONEY  房间订单重算     PK_TRADE_COIN_USER
+PK_TRADE_COIN_SYS
+PK_PRIZE_COIN_USER
+PK_PRIZE_COIN_SYS

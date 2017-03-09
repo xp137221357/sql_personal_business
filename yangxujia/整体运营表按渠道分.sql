@@ -1,5 +1,5 @@
-set @param0='2016-09-14';
-set @param1='2016-09-21';
+set @param0='2016-12-14';
+set @param1='2016-12-21';
 
 -- set params=['2016-09-14','2016-09-21'];
 -- device_type: 终端类型,device_pv：访问PV，device_uv：访问UV

@@ -15,9 +15,6 @@ SELECT Date_format(u.crt_time, '%Y-%m-%d') period_name,
        u.user_id,
        Count(DISTINCT u.user_id)           register_counts
 FROM   forum.t_user u
-       INNER JOIN forum.t_user_event e
-               ON u.user_id = e.user_id
-                  AND e.event_code = 'REG'
        INNER JOIN game.t_group_ref r1
                ON u.user_code = r1.user_id
        INNER JOIN game.t_group_ref r2

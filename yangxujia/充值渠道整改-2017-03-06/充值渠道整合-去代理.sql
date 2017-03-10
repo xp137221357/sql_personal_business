@@ -1,5 +1,6 @@
-set param=['2017-01-01', '2017-01-10 23:59:59'];
-
+-- set param=['2017-01-01', '2017-01-10 23:59:59'];
+set @param0='2017-01-01';
+set @param1='2017-01-10 23:59:59';
 select 
 tt1.stat_time '时间',
 tt1.channel_company '公司名',
@@ -124,18 +125,21 @@ left join (
 		)t2 group by t2.charge_user_id 
 		) tc 
 		inner join t_trans_user_attr tu on tc.charge_user_id = tu.USER_ID 
-		and tu.USER_ID not in (
+		left join (
 			SELECT 
-			       u.user_id
-			FROM   forum.t_user u
-			       INNER JOIN game.t_group_ref r1
-			               ON u.user_code = r1.user_id
-			       INNER JOIN game.t_group_ref r2
-			               ON r1.root_id = r2.ref_id
-			       INNER JOIN report.t_user_general_agent tu 
-			       			ON r2.user_id = tu.user_code
-			WHERE  u.client_id = 'BYAPP'
-			)
+						       u.user_id
+						FROM   forum.t_user u
+						       INNER JOIN game.t_group_ref r1
+						               ON u.user_code = r1.user_id
+						       INNER JOIN game.t_group_ref r2
+						               ON r1.root_id = r2.ref_id
+						       INNER JOIN report.t_user_general_agent tu 
+						       			ON r2.user_id = tu.user_code
+						WHERE  u.client_id = 'BYAPP'
+			union 
+			select user_id from  report.t_user_general_agent
+			) tg on  tu.USER_id = tg.user_id
+		where tg.user_id is null
 		and tc.CRT_TIME >=@param0
 		and tc.CRT_TIME <=@param1
 		and tc.charge_user_id not in (select user_id from t_user_merchant)
@@ -151,18 +155,21 @@ left join (
 		)t2 group by t2.charge_user_id 
 		) tc 
 		inner join t_trans_user_attr tu on tc.charge_user_id = tu.USER_ID 
-		and tu.USER_ID not in (
+		left join (
 			SELECT 
-			       u.user_id
-			FROM   forum.t_user u
-			       INNER JOIN game.t_group_ref r1
-			               ON u.user_code = r1.user_id
-			       INNER JOIN game.t_group_ref r2
-			               ON r1.root_id = r2.ref_id
-			       INNER JOIN report.t_user_general_agent tu 
-			       			ON r2.user_id = tu.user_code
-			WHERE  u.client_id = 'BYAPP'
-			)  
+						       u.user_id
+						FROM   forum.t_user u
+						       INNER JOIN game.t_group_ref r1
+						               ON u.user_code = r1.user_id
+						       INNER JOIN game.t_group_ref r2
+						               ON r1.root_id = r2.ref_id
+						       INNER JOIN report.t_user_general_agent tu 
+						       			ON r2.user_id = tu.user_code
+						WHERE  u.client_id = 'BYAPP'
+			union 
+			select user_id from  report.t_user_general_agent
+			) tg on  tu.USER_id = tg.user_id
+		where tg.user_id is null
 		and tc.CRT_TIME >=@param0
 		and tc.CRT_TIME <=@param1
 		and tc.charge_user_id not in (select user_id from t_user_merchant)
@@ -194,20 +201,22 @@ left join (
 		) tt on tc.charge_user_id = tt.charge_user_id 
 		and tc.charge_method='APP'
 		inner join t_trans_user_attr tu on tc.charge_user_id = tu.USER_ID 
-		and tu.USER_ID not in (
+		left join (
 			SELECT 
-			       u.user_id
-			FROM   forum.t_user u
-			       INNER JOIN game.t_group_ref r1
-			               ON u.user_code = r1.user_id
-			       INNER JOIN game.t_group_ref r2
-			               ON r1.root_id = r2.ref_id
-			       INNER JOIN report.t_user_general_agent tu 
-			       			ON r2.user_id = tu.user_code
-			WHERE  u.client_id = 'BYAPP'
-			)
-		where 
-		tc.CRT_TIME >=@param0
+						       u.user_id
+						FROM   forum.t_user u
+						       INNER JOIN game.t_group_ref r1
+						               ON u.user_code = r1.user_id
+						       INNER JOIN game.t_group_ref r2
+						               ON r1.root_id = r2.ref_id
+						       INNER JOIN report.t_user_general_agent tu 
+						       			ON r2.user_id = tu.user_code
+						WHERE  u.client_id = 'BYAPP'
+			union 
+			select user_id from  report.t_user_general_agent
+			) tg on  tu.USER_id = tg.user_id
+		where tg.user_id is null
+		and tc.CRT_TIME >=@param0
 		and tc.CRT_TIME <=@param1
 		and tc.charge_user_id not in (select user_id from t_user_merchant)
 		and tc.charge_user_id not in (select user_id from v_user_boss)
@@ -225,23 +234,25 @@ left join (
 		)t1 order by t1.crt_time asc 
 		)t2 group by t2.charge_user_id 
 		) tc where tc.crt_time>=@param0 and tc.crt_time<=@param1
-		
 		) tt on td.charge_user_id = tt.charge_user_id 
 		and td.charge_method='APP'
 		inner join t_trans_user_attr tu on td.charge_user_id = tu.USER_ID 
-		and tu.USER_ID not in (
+		left join (
 			SELECT 
-			       u.user_id
-			FROM   forum.t_user u
-			       INNER JOIN game.t_group_ref r1
-			               ON u.user_code = r1.user_id
-			       INNER JOIN game.t_group_ref r2
-			               ON r1.root_id = r2.ref_id
-			       INNER JOIN report.t_user_general_agent tu 
-			       			ON r2.user_id = tu.user_code
-			WHERE  u.client_id = 'BYAPP'
-			)
-		where td.CRT_TIME >=@param0
+						       u.user_id
+						FROM   forum.t_user u
+						       INNER JOIN game.t_group_ref r1
+						               ON u.user_code = r1.user_id
+						       INNER JOIN game.t_group_ref r2
+						               ON r1.root_id = r2.ref_id
+						       INNER JOIN report.t_user_general_agent tu 
+						       			ON r2.user_id = tu.user_code
+						WHERE  u.client_id = 'BYAPP'
+			union 
+			select user_id from  report.t_user_general_agent
+			) tg on  tu.USER_id = tg.user_id
+		where tg.user_id is null
+		and td.CRT_TIME >=@param0
 		and td.CRT_TIME <=@param1
 		and td.charge_user_id not in (select user_id from t_user_merchant)
 		and td.charge_user_id not in (select user_id from v_user_boss)
@@ -265,20 +276,22 @@ left join (
 		)tt where tt.crt_time>=@param0 and tt.crt_time<=@param1 group by tt.charge_user_id
 		) tt on tc.charge_user_id = tt.charge_user_id and tc.charge_method!='APP'
 		inner join t_trans_user_attr tu on tc.charge_user_id = tu.USER_ID 
-		and tu.USER_ID not in (
+		left join (
 			SELECT 
-			       u.user_id
-			FROM   forum.t_user u
-			       INNER JOIN game.t_group_ref r1
-			               ON u.user_code = r1.user_id
-			       INNER JOIN game.t_group_ref r2
-			               ON r1.root_id = r2.ref_id
-			       INNER JOIN report.t_user_general_agent tu 
-			       			ON r2.user_id = tu.user_code
-			WHERE  u.client_id = 'BYAPP'
-			)
-		where 
-		tc.CRT_TIME >=@param0
+						       u.user_id
+						FROM   forum.t_user u
+						       INNER JOIN game.t_group_ref r1
+						               ON u.user_code = r1.user_id
+						       INNER JOIN game.t_group_ref r2
+						               ON r1.root_id = r2.ref_id
+						       INNER JOIN report.t_user_general_agent tu 
+						       			ON r2.user_id = tu.user_code
+						WHERE  u.client_id = 'BYAPP'
+			union 
+			select user_id from  report.t_user_general_agent
+			) tg on  tu.USER_id = tg.user_id
+		where tg.user_id is null
+		and tc.CRT_TIME >=@param0
 		and tc.CRT_TIME <=@param1
 		and tc.charge_user_id not in (select user_id from t_user_merchant)
 		and tc.charge_user_id not in (select user_id from v_user_boss)
@@ -309,20 +322,22 @@ left join (
 		from (
 		select '金币',tu.SYSTEM_MODEL,tu.CHANNEL_COMPANY,tu.channel_name, tc.charge_user_id,tc.rmb_value from t_trans_user_recharge_coin tc
 		inner join t_trans_user_attr tu on tc.charge_user_id = tu.USER_ID 
-		and tu.USER_ID not in (
+		left join (
 			SELECT 
-			       u.user_id
-			FROM   forum.t_user u
-			       INNER JOIN game.t_group_ref r1
-			               ON u.user_code = r1.user_id
-			       INNER JOIN game.t_group_ref r2
-			               ON r1.root_id = r2.ref_id
-			       INNER JOIN report.t_user_general_agent tu 
-			       			ON r2.user_id = tu.user_code
-			WHERE  u.client_id = 'BYAPP'
-			)
-		where 
-		tc.CRT_TIME >=@param0
+						       u.user_id
+						FROM   forum.t_user u
+						       INNER JOIN game.t_group_ref r1
+						               ON u.user_code = r1.user_id
+						       INNER JOIN game.t_group_ref r2
+						               ON r1.root_id = r2.ref_id
+						       INNER JOIN report.t_user_general_agent tu 
+						       			ON r2.user_id = tu.user_code
+						WHERE  u.client_id = 'BYAPP'
+			union 
+			select user_id from  report.t_user_general_agent
+			) tg on  tu.USER_id = tg.user_id
+		where tg.user_id is null
+		and tc.CRT_TIME >=@param0
 		and tc.CRT_TIME <=@param1
 		and tc.charge_user_id not in (select user_id from t_user_merchant)
 		and tc.charge_user_id not in (select user_id from v_user_boss)
@@ -331,19 +346,22 @@ left join (
 		
 		select '钻石',tu.SYSTEM_MODEL,tu.CHANNEL_COMPANY,tu.channel_name,td.charge_user_id,td.rmb_value from t_trans_user_recharge_diamond td
 		inner join t_trans_user_attr tu on td.charge_user_id = tu.USER_ID 
-		and tu.USER_ID not in (
+		left join (
 			SELECT 
-			       u.user_id
-			FROM   forum.t_user u
-			       INNER JOIN game.t_group_ref r1
-			               ON u.user_code = r1.user_id
-			       INNER JOIN game.t_group_ref r2
-			               ON r1.root_id = r2.ref_id
-			       INNER JOIN report.t_user_general_agent tu 
-			       			ON r2.user_id = tu.user_code
-			WHERE  u.client_id = 'BYAPP'
-			)
-		where td.CRT_TIME >=@param0
+						       u.user_id
+						FROM   forum.t_user u
+						       INNER JOIN game.t_group_ref r1
+						               ON u.user_code = r1.user_id
+						       INNER JOIN game.t_group_ref r2
+						               ON r1.root_id = r2.ref_id
+						       INNER JOIN report.t_user_general_agent tu 
+						       			ON r2.user_id = tu.user_code
+						WHERE  u.client_id = 'BYAPP'
+			union 
+			select user_id from  report.t_user_general_agent
+			) tg on  tu.USER_id = tg.user_id
+		where tg.user_id is null
+		and td.CRT_TIME >=@param0
 		and td.CRT_TIME <=@param1
 		and td.charge_user_id not in (select user_id from t_user_merchant)
 		and td.charge_user_id not in (select user_id from v_user_boss)
@@ -359,42 +377,45 @@ left join (
 		sum(ttt.rmb_value) app_recharge
 		from (
 		select '金币',tu.SYSTEM_MODEL,tu.CHANNEL_COMPANY,tu.channel_name, tc.charge_user_id,tc.rmb_value from t_trans_user_recharge_coin tc
-		inner join t_trans_user_attr tu on tc.charge_user_id = tu.USER_ID 
-		and tu.USER_ID not in (
+		inner join t_trans_user_attr tu on tc.charge_user_id = tu.USER_ID and tc.charge_method='APP'
+		left join (
 			SELECT 
-			       u.user_id
-			FROM   forum.t_user u
-			       INNER JOIN game.t_group_ref r1
-			               ON u.user_code = r1.user_id
-			       INNER JOIN game.t_group_ref r2
-			               ON r1.root_id = r2.ref_id
-			       INNER JOIN report.t_user_general_agent tu 
-			       			ON r2.user_id = tu.user_code
-			WHERE  u.client_id = 'BYAPP'
-			) 
-		and tc.charge_method='APP'
-		where 
-		tc.CRT_TIME >=@param0
+						       u.user_id
+						FROM   forum.t_user u
+						       INNER JOIN game.t_group_ref r1
+						               ON u.user_code = r1.user_id
+						       INNER JOIN game.t_group_ref r2
+						               ON r1.root_id = r2.ref_id
+						       INNER JOIN report.t_user_general_agent tu 
+						       			ON r2.user_id = tu.user_code
+						WHERE  u.client_id = 'BYAPP'
+			union 
+			select user_id from  report.t_user_general_agent
+			) tg on  tu.USER_id = tg.user_id
+		where tg.user_id is null 
+		and tc.CRT_TIME >=@param0
 		and tc.CRT_TIME <=@param1
 		and tc.charge_user_id not in (select user_id from t_user_merchant)
 		and tc.charge_user_id not in (select user_id from v_user_boss)
 		union all
 		select '钻石',tu.SYSTEM_MODEL,tu.CHANNEL_COMPANY,tu.channel_name,td.charge_user_id,td.rmb_value from t_trans_user_recharge_diamond td
-		inner join t_trans_user_attr tu on td.charge_user_id = tu.USER_ID 
-		and tu.USER_ID not in (
+		inner join t_trans_user_attr tu on td.charge_user_id = tu.USER_ID and td.charge_method='APP'
+		left join (
 			SELECT 
-			       u.user_id
-			FROM   forum.t_user u
-			       INNER JOIN game.t_group_ref r1
-			               ON u.user_code = r1.user_id
-			       INNER JOIN game.t_group_ref r2
-			               ON r1.root_id = r2.ref_id
-			       INNER JOIN report.t_user_general_agent tu 
-			       			ON r2.user_id = tu.user_code
-			WHERE  u.client_id = 'BYAPP'
-			) 
-		and td.charge_method='APP'
-		where td.CRT_TIME >=@param0
+						       u.user_id
+						FROM   forum.t_user u
+						       INNER JOIN game.t_group_ref r1
+						               ON u.user_code = r1.user_id
+						       INNER JOIN game.t_group_ref r2
+						               ON r1.root_id = r2.ref_id
+						       INNER JOIN report.t_user_general_agent tu 
+						       			ON r2.user_id = tu.user_code
+						WHERE  u.client_id = 'BYAPP'
+			union 
+			select user_id from  report.t_user_general_agent
+			) tg on  tu.USER_id = tg.user_id
+		where tg.user_id is null
+		and td.CRT_TIME >=@param0
 		and td.CRT_TIME <=@param1
 		and td.charge_user_id not in (select user_id from t_user_merchant)
 		and td.charge_user_id not in (select user_id from v_user_boss)
@@ -410,22 +431,23 @@ left join (
 		sum(ttt.rmb_value) third_recharge
 	   from (
 		select '金币',tu.SYSTEM_MODEL,tu.CHANNEL_COMPANY,tu.CHANNEL_NAME, tc.charge_user_id,tc.rmb_value from t_trans_user_recharge_coin tc
-		inner join t_trans_user_attr tu on tc.charge_user_id = tu.USER_ID 
-		and tu.USER_ID not in (
+		inner join t_trans_user_attr tu on tc.charge_user_id = tu.USER_ID and tc.charge_method !='APP'
+		left join (
 			SELECT 
-			       u.user_id
-			FROM   forum.t_user u
-			       INNER JOIN game.t_group_ref r1
-			               ON u.user_code = r1.user_id
-			       INNER JOIN game.t_group_ref r2
-			               ON r1.root_id = r2.ref_id
-			       INNER JOIN report.t_user_general_agent tu 
-			       			ON r2.user_id = tu.user_code
-			WHERE  u.client_id = 'BYAPP'
-			) 
-		and tc.charge_method !='APP'
-		where 
-		tc.CRT_TIME >=@param0
+						       u.user_id
+						FROM   forum.t_user u
+						       INNER JOIN game.t_group_ref r1
+						               ON u.user_code = r1.user_id
+						       INNER JOIN game.t_group_ref r2
+						               ON r1.root_id = r2.ref_id
+						       INNER JOIN report.t_user_general_agent tu 
+						       			ON r2.user_id = tu.user_code
+						WHERE  u.client_id = 'BYAPP'
+			union 
+			select user_id from  report.t_user_general_agent
+			) tg on  tu.USER_id = tg.user_id
+		where tg.user_id is null
+		and tc.CRT_TIME >=@param0
 		and tc.CRT_TIME <=@param1
 		and tc.charge_user_id not in (select user_id from t_user_merchant)
 		and tc.charge_user_id not in (select user_id from v_user_boss)

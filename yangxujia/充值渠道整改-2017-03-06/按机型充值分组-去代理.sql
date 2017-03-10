@@ -1,28 +1,47 @@
-set param=['2017-01-01', '2017-01-31 23:59:59', '2017-01-01', '2017-01-31 23:59:59'];
+-- set param=['2017-01-01', '2017-01-30 23:59:59', '2017-01-01', '2017-01-30 23:59:59'];
+
+set @param0='2016-08-01';
+set @param1='2017-01-31 23:59:59';
+set @param2='2016-08-01';
+set @param3='2017-01-31 23:59:59';
 
 select 
-   concat(@param0,'~',@param1) 'ÆğÊ¼Ê±¼ä',
-   concat(@param2,'~',@param3) 'Áô´æÊ±¼ä',
-   t1.mobile_version '»úĞÍ',
-   t1.total_users '×ÜÈËÊı',
-	t1.total_recharge '×Ü½ğ¶î',
-	t2.app_users '¹Ù³äÈËÊı',
-	t2.app_recharge '¹Ù³ä½ğ¶î',
-	t2.app_users_coin '¹Ù³ä½ğ±ÒÈËÊı',
-	t2.app_recharge_coin '¹Ù³ä½ğ±Ò½ğ¶î',
-	t2.app_users_dmd '¹Ù³ä×êÊ¯ÈËÊı',
-	t2.app_recharge_dmd '¹Ù³ä×êÊ¯½ğ¶î',
-	t3.third_users 'µÚÈı·½³äÖµÈËÊı',
-	t3.third_recharge 'µÚÈı·½³äÖµ½ğ¶î',
-	t4.bet_count 'Í¶×¢ÈËÊı',
-	t4.bet_coins 'Í¶×¢½ğ±Ò'
+   concat(@param0,'~',@param1) 'èµ·å§‹æ—¶é—´',
+   concat(@param2,'~',@param3) 'ç•™å­˜æ—¶é—´',
+   t1.mobile_version 'æœºå‹',
+   t1.total_users 'æ€»äººæ•°',
+	t1.total_recharge 'æ€»é‡‘é¢',
+	t2.app_users 'å®˜å……äººæ•°',
+	t2.app_recharge 'å®˜å……é‡‘é¢',
+	t2.app_users_coin 'å®˜å……é‡‘å¸äººæ•°',
+	t2.app_recharge_coin 'å®˜å……é‡‘å¸é‡‘é¢',
+	t2.app_users_dmd 'å®˜å……é’»çŸ³äººæ•°',
+	t2.app_recharge_dmd 'å®˜å……é’»çŸ³é‡‘é¢',
+	t3.third_users 'ç¬¬ä¸‰æ–¹å……å€¼äººæ•°',
+	t3.third_recharge 'ç¬¬ä¸‰æ–¹å……å€¼é‡‘é¢',
+	t4.bet_count 'æŠ•æ³¨äººæ•°',
+	t4.bet_coins 'æŠ•æ³¨é‡‘å¸'
 	from (
 	select ifnull(ttt.mobile_version,'other') mobile_version,
 	count(distinct ttt.charge_user_id) total_users,
 	sum(ttt.rmb_value) total_recharge
 	from (
-	select '½ğ±Ò',tu.mobile_version, tc.charge_user_id,tc.rmb_value from t_trans_user_recharge_coin tc
-	inner join report.t_user_mobile_0215 tu on tc.charge_user_id = tu.USER_ID and tu.USER_CODE not in (select user_id from game.t_group_ref) 
+	select 'é‡‘å¸',tu.mobile_version, tc.charge_user_id,tc.rmb_value from t_trans_user_recharge_coin tc
+	inner join report.t_user_mobile tu on tc.charge_user_id = tu.USER_ID 
+	and tu.USER_ID not in (
+			SELECT 
+						       u.user_id
+						FROM   forum.t_user u
+						       INNER JOIN game.t_group_ref r1
+						               ON u.user_code = r1.user_id
+						       INNER JOIN game.t_group_ref r2
+						               ON r1.root_id = r2.ref_id
+						       INNER JOIN report.t_user_general_agent tu 
+						       			ON r2.user_id = tu.user_code
+						WHERE  u.client_id = 'BYAPP'
+			union 
+			select user_id from  report.t_user_general_agent
+			)  
 	inner join (
 	select * from (
 	select * from (
@@ -41,8 +60,22 @@ select
 	
 	union all
 	
-	select '×êÊ¯',tu.mobile_version,td.charge_user_id,td.rmb_value from t_trans_user_recharge_diamond td
-	inner join report.t_user_mobile_0215 tu on td.charge_user_id = tu.USER_ID and tu.USER_CODE not in (select user_id from game.t_group_ref) 
+	select 'é’»çŸ³',tu.mobile_version,td.charge_user_id,td.rmb_value from t_trans_user_recharge_diamond td
+	inner join report.t_user_mobile tu on td.charge_user_id = tu.USER_ID
+	and tu.USER_ID not in (
+			SELECT 
+						       u.user_id
+						FROM   forum.t_user u
+						       INNER JOIN game.t_group_ref r1
+						               ON u.user_code = r1.user_id
+						       INNER JOIN game.t_group_ref r2
+						               ON r1.root_id = r2.ref_id
+						       INNER JOIN report.t_user_general_agent tu 
+						       			ON r2.user_id = tu.user_code
+						WHERE  u.client_id = 'BYAPP'
+			union 
+			select user_id from  report.t_user_general_agent
+			) 
 	inner join (
 	select * from (
 	select * from (
@@ -70,8 +103,22 @@ left join (
 	count(distinct if(buy_type=1,ttt.charge_user_id,null)) app_users_dmd,
 	sum(if(buy_type=1,ttt.rmb_value,0)) app_recharge_dmd
 	from (
-	select '½ğ±Ò',tu.mobile_version, tc.charge_user_id,tc.rmb_value,0 as buy_type from t_trans_user_recharge_coin tc
-	inner join report.t_user_mobile_0215 tu on tc.charge_user_id = tu.USER_ID and tu.USER_CODE not in (select user_id from game.t_group_ref)  
+	select 'é‡‘å¸',tu.mobile_version, tc.charge_user_id,tc.rmb_value,0 as buy_type from t_trans_user_recharge_coin tc
+	inner join report.t_user_mobile tu on tc.charge_user_id = tu.USER_ID 
+	and tu.USER_ID not in (
+			SELECT 
+						       u.user_id
+						FROM   forum.t_user u
+						       INNER JOIN game.t_group_ref r1
+						               ON u.user_code = r1.user_id
+						       INNER JOIN game.t_group_ref r2
+						               ON r1.root_id = r2.ref_id
+						       INNER JOIN report.t_user_general_agent tu 
+						       			ON r2.user_id = tu.user_code
+						WHERE  u.client_id = 'BYAPP'
+			union 
+			select user_id from  report.t_user_general_agent
+			)  
 	inner join (
 	select * from (
 	select * from (
@@ -89,8 +136,22 @@ left join (
 	and tc.charge_user_id not in (select user_id from t_user_merchant)
 	and tc.charge_user_id not in (select user_id from v_user_boss)
 	union all
-	select '×êÊ¯',tu.mobile_version,td.charge_user_id,td.rmb_value,1 as buy_type from t_trans_user_recharge_diamond td
-	inner join report.t_user_mobile_0215 tu on td.charge_user_id = tu.USER_ID and tu.USER_CODE not in (select user_id from game.t_group_ref)  
+	select 'é’»çŸ³',tu.mobile_version,td.charge_user_id,td.rmb_value,1 as buy_type from t_trans_user_recharge_diamond td
+	inner join report.t_user_mobile tu on td.charge_user_id = tu.USER_ID 
+	and tu.USER_ID not in (
+			SELECT 
+						       u.user_id
+						FROM   forum.t_user u
+						       INNER JOIN game.t_group_ref r1
+						               ON u.user_code = r1.user_id
+						       INNER JOIN game.t_group_ref r2
+						               ON r1.root_id = r2.ref_id
+						       INNER JOIN report.t_user_general_agent tu 
+						       			ON r2.user_id = tu.user_code
+						WHERE  u.client_id = 'BYAPP'
+			union 
+			select user_id from  report.t_user_general_agent
+			)   
 	inner join (
 	select * from (
 	select * from (
@@ -115,8 +176,22 @@ left join (
 	count(distinct ttt.charge_user_id) third_users,
 	sum(ttt.rmb_value) third_recharge
    from (
-	select '½ğ±Ò',tu.mobile_version, tc.charge_user_id,tc.rmb_value from t_trans_user_recharge_coin tc
-	inner join report.t_user_mobile_0215 tu on tc.charge_user_id = tu.USER_ID and tu.USER_CODE not in (select user_id from game.t_group_ref) 
+	select 'é‡‘å¸',tu.mobile_version, tc.charge_user_id,tc.rmb_value from t_trans_user_recharge_coin tc
+	inner join report.t_user_mobile tu on tc.charge_user_id = tu.USER_ID 
+	and tu.USER_ID not in (
+			SELECT 
+						       u.user_id
+						FROM   forum.t_user u
+						       INNER JOIN game.t_group_ref r1
+						               ON u.user_code = r1.user_id
+						       INNER JOIN game.t_group_ref r2
+						               ON r1.root_id = r2.ref_id
+						       INNER JOIN report.t_user_general_agent tu 
+						       			ON r2.user_id = tu.user_code
+						WHERE  u.client_id = 'BYAPP'
+			union 
+			select user_id from  report.t_user_general_agent
+			)  
 	inner join (
 	select * from (
 	select * from (
@@ -173,7 +248,21 @@ select tc.charge_user_id from t_trans_user_recharge_coin tc
 	and td.charge_user_id not in (select user_id from v_user_boss)
 ) t group by t.charge_user_id
 ) tt 
-inner join report.t_user_mobile_0215 tu on tu.USER_ID = tt.charge_user_id and tu.USER_CODE not in (select user_id from game.t_group_ref) 
+inner join report.t_user_mobile tu on tu.USER_ID = tt.charge_user_id 
+and tu.USER_ID not in (
+			SELECT 
+						       u.user_id
+						FROM   forum.t_user u
+						       INNER JOIN game.t_group_ref r1
+						               ON u.user_code = r1.user_id
+						       INNER JOIN game.t_group_ref r2
+						               ON r1.root_id = r2.ref_id
+						       INNER JOIN report.t_user_general_agent tu 
+						       			ON r2.user_id = tu.user_code
+						WHERE  u.client_id = 'BYAPP'
+			union 
+			select user_id from  report.t_user_general_agent
+			) 
 inner join report.t_trans_user_attr ta on ta.USER_ID= tu.USER_ID 
 left join game.t_order_item oi on ta.USER_CODE=oi.USER_ID 
 and oi.CHANNEL_CODE = 'GAME' and oi.ITEM_STATUS not in (-5, -10 ,210) 

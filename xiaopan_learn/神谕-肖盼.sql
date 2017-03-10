@@ -576,3 +576,7 @@ SELECT ITEM_TYPE ITEM_TYPE, SUM(ACCT_BALANCE + FREEZE_MONEY) / 100 BALANCE
 -- 整体运营数据分组
 -- 按天分组，按小时分组
 -- 通过时间偏移来达到 天与小时分组的组合分组
+
+-- 实际情况
+-- * 数据量大时候，尽量用join，尽量不用 in ，避免比较 
+-- * 数据量少用in时，里面尽量不用 union all，效率很低

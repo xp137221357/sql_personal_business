@@ -28,7 +28,7 @@ inner join forum.t_user u on u.USER_ID=td.charge_user_id and u.CLIENT_ID='BYAPP'
 and u.CRT_TIME>= @param0 and u.CRT_TIME<= @param1 
 and td.CRT_TIME >= @param0 and td.CRT_TIME <= @param1
 -- and date(u.CRT_TIME)=date(td.CRT_TIME  )
--- group by date(td.CRT_TIME  ) 
+-- group by date(td.CRT_TIME  ) ;
 ;
 
 

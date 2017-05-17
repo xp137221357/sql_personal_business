@@ -189,6 +189,31 @@ select to_char(sysdate+1/2,'yyyy-mm-dd HH24:MI:SS') from dual;
 select to_date('2017-02-21 17:59:00','yyyy-mm-dd HH24:MI:SS') from dual
 select sysdate+1,sysdate+1/2 from dual
 
+-- oracle时间戳转化日期
+-- 下面的毫秒会四舍五入，导致出现误差
+-- 28800=8*60*60的unix/linux时间偏差
+-- 86400=24*60*60 
+select  TO_DATE('19700101','yyyymmdd') + ((1490025599759+28800000)/86400000) from dual;
+-- 正确的方式如下
+select  TO_DATE('19700101','yyyymmdd') + ((floor(1490025599759/1000)+28800)/86400) from dual;
+-- 或者
+select TO_DATE('19700101','yyyymmdd') + 1490025599/86400 +TO_NUMBER(SUBSTR(TZ_OFFSET(sessiontimezone),1,3))/24 from dual;
+
+-- mysql 日期与时间戳之间的转化
+-- 日期-->时间戳
+select FROM_UNIXTIME(1430236800,'%Y-%m-%d') from dual
+-- 时间戳-->日期
+select UNIX_TIMESTAMP('2015-04-29');
+
+-- date_format周期格式化
+-- 格式化周：Y-U(国外周,周日起)，x-v(国内周,周一起)
+-- 周：date_format(ts.stat_time,'%x%v')
+select date_add(date_add(curdate(), interval 2-dayofweek(curdate()) day),interval -2 week);
+select date_add(date_add(curdate(), interval 2-dayofweek(curdate()) day),interval -1 week);
+-- 月：date_format(ts.stat_time,'%Y-%m')
+select date_add(date_add(last_day(curdate()),interval -2 month),interval 1 day)
+select concat(date_add(last_day(curdate()),interval -1 month),' 23:59:59')
+
 
 -- ORACLE 条件语句的查询
 
@@ -300,6 +325,18 @@ INSTR('abcd', 'b')
 select substr('xiaopanq',locate('p','xiaopanq')+1,locate('q','xiaopanq')-locate('p','xiaopanq')-1)
 update t_job t set t.table_name=substr(t.job_name,locate('[',t.job_name)+1,locate(']',t.job_name)-locate('[',t.job_name)-1)
 
+-- 持续进步
+-- *oracle的rownum实现 mysql中的 limit
+-- http://www.cnblogs.com/szlbm/p/5806070.html
+-- rownum 总是从 1 开始
+-- 一般代码中对结果集进行分页就是这么干的:
+select * 
+from (selet rownum as rn,t1.* from a where ...)
+where rn >10
+
+-- 持续进步
+-- mysql的正则表达式
+select * from forum.t_user u where u.NICK_NAME REGEXP 'byzq[0-9]' limit 1000
 
 -- mysql字符串与数字的转化
 方法一：SELECT '123'+0; 
@@ -317,10 +354,6 @@ now() = curdate()+curtime()
 -- mysql根据身份证计算年龄
 SELECT FLOOR(TIMESTAMPDIFF(MONTH,substr(replace('133022 19740403 0671',' ',''),7,8),curdate())/12)
 FROM DUAL
-
--- 持续进步
--- mysql的正则表达式
-select * from forum.t_user u where u.NICK_NAME REGEXP 'byzq[0-9]' limit 1000
 
 -- 持续进步
 -- 使用PREPARE解决limit后面不能接变量问题以及计算
@@ -566,12 +599,24 @@ order by t.CRT_TIME asc ;
 -- mysql
 select FROM_UNIXTIME('1468078828','%Y-%m-%d %H:%i:%S');
 
--- oracle(快照回闪)
-
+-- oracle(数据回滚,SCN(System Change Number))
+-- http://blog.sina.com.cn/s/blog_6d6e54f70100z7yd.html
+-- timestamp就是基于scn进行回滚的
 SELECT ITEM_TYPE ITEM_TYPE, SUM(ACCT_BALANCE + FREEZE_MONEY) / 100 BALANCE
-    FROM V_ACCOUNT_ITEM as of timestamp trunc(sysdate)
+    FROM V_ACCOUNT_ITEM as of timestamp to_date('2017-04-27 23:59:59','yyyy-mm-dd hh24:mi:ss') t
     where ITEM_TYPE in (1001, 1015)
-    group by ITEM_TYPE
+    group by ITEM_TYPE;
+    
+SELECT ITEM_TYPE ITEM_TYPE, SUM(ACCT_BALANCE + FREEZE_MONEY) / 100 BALANCE
+    FROM V_ACCOUNT_ITEM as of scn TIMESTAMP_TO_SCN(to_date('2017-04-27 23:59:59','yyyy-mm-dd hh24:mi:ss')) t
+    where ITEM_TYPE in (1001, 1015)
+    group by ITEM_TYPE;
+    
+-- 2017-04-28 23:59:59, 293600547
+-- 2017-04-28 23:59:57, 293600547
+-- 每一条记录会对应一个scn,而按时间回滚timestamp每三秒钟匹配一个scn(这样会丢失一部分数据)
+SELECT TIMESTAMP_TO_SCN(to_date('2017-04-27 23:59:59','yyyy-mm-dd hh24:mi:ss')) from dual;
+SELECT to_char(SCN_TO_TIMESTAMP(293600547),'yyyy-mm-dd hh24:mi:ss') FROM DUAL;
 
 -- 整体运营数据分组
 -- 按天分组，按小时分组
@@ -580,3 +625,5 @@ SELECT ITEM_TYPE ITEM_TYPE, SUM(ACCT_BALANCE + FREEZE_MONEY) / 100 BALANCE
 -- 实际情况
 -- * 数据量大时候，尽量用join，尽量不用 in ，避免比较 
 -- * 数据量少用in时，里面尽量不用 union all，效率很低
+
+

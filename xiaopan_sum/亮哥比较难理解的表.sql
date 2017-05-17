@@ -19,6 +19,7 @@ t_acct_items 免费券的问题
 --    item_event='FREE_RECOM_COUPON' and ai.ACCT_TYPE=104 免费推荐券
 -- 使用
 -- 	where ai.item_event ='BUY_RECOM' and ai.ACCT_TYPE=103
+-- item_event="GET_FREE_COIN" --免费领取(包括来免费领取钻石和金币)
 t_code 罗列了所有的券种类
 注:在t_acct_items计算券面额时注意其中的'acct_type'
 账务表： v_account_item t  账务余额情况

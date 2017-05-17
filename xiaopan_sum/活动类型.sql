@@ -9,7 +9,7 @@
 "CP_TRADE"-赏金答题扣减
 "FG_GAME_PRIZE"-石头剪刀布派奖
 "FG_GAME_TRADE"-石头剪刀布扣减
-"GET_FREE_COIN"-免费领取
+"GET_FREE_COIN"-免费领取(包括来免费领取钻石和金币)
 "PRESENT_FROM_USER"-赠送获得
 "USER_PRESENT"-赠送
 "PRIZE_COIN"-下注派奖

@@ -3,7 +3,10 @@ set @beginTime = '2016-09-01';
 set @endTime = '2016-09-21';
 set @invite_code = '01036947';
 
-
+-- 对game.t_group_ref表的理解
+-- ref_id 是用户自己的代理ID
+-- root_id 表示用户的原始总代理ID
+-- last_id 表示用户的上一级代理ID
 
 select ai.* from game.t_user_ext t  
 inner join forum.t_user u on u.USER_CODE = t.USER_ID and t.INVITE_CODE='01036947'

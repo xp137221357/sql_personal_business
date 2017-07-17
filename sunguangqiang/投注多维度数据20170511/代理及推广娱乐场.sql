@@ -1,6 +1,6 @@
-set @param0 = '2016-10-01'; 
-set @param1 = '2016-11-01';
-set @param2 = '十月份';
+set @param0 = '2017-05-01'; 
+set @param1 = '2017-06-01';
+set @param2 = '5月份';
 
 select @param2 '时间','娱乐场总',t1.counts '人数',ifnull(t1.bets,0)-ifnull(t3.cancel,0) '投注',t2.prize '返奖' from (
 	select count(distinct ai.USER_ID) counts,sum(ai.CHANGE_VALUE) bets from forum.t_acct_items ai
@@ -38,21 +38,22 @@ union all
 select @param2 '时间','山东代理',t1.counts '人数',ifnull(t1.bets,0)-ifnull(t3.cancel,0) '投注',t2.prize '返奖' from (
 	select count(distinct ai.USER_ID) counts,sum(ai.CHANGE_VALUE) bets from forum.t_acct_items ai
 	inner join (
-		SELECT 
-		       u.user_id user_id
+			SELECT 
+	       u.user_id,r1.CRT_TIME
 		FROM   forum.t_user u
 		INNER JOIN game.t_group_ref r1
-		      ON u.user_code = r1.user_id
+		      ON u.user_code = r1.user_id  
 		INNER JOIN game.t_group_ref r2
 		      ON r1.root_id = r2.ref_id
 		INNER JOIN forum.t_user u2
 		      ON r2.user_id = u2.user_code
-		      AND u2.USER_ID in (select user_id from report.t_user_general_agent t where t.comments='shandong')
-				and u.client_id = 'BYAPP'
+		inner join report.t_partner_group tg on tg.user_id=u2.USER_CODE  and tg.is_valid=0 and tg.user_id='5962840904510621262'
+		      and u.client_id = 'BYAPP'
+		group by u.USER_ID
 		
-		union  
-		
-		select user_code from report.t_user_general_agent t where t.comments='shandong'
+		 union all
+	
+		select tg.user_id,tg.crt_time from report.t_partner_group tg  where tg.is_valid=0 and tg.user_id='5962840904510621262'
 	) t on ai.USER_ID=t.user_id
 	where ai.PAY_TIME>=@param0
 	and ai.PAY_TIME<@param1
@@ -65,21 +66,22 @@ left join
 (
 	select sum(ai.CHANGE_VALUE) prize from forum.t_acct_items ai
 	inner join (
-		SELECT 
-		       u.user_id user_id
+			SELECT 
+	       u.user_id,r1.CRT_TIME
 		FROM   forum.t_user u
 		INNER JOIN game.t_group_ref r1
-		      ON u.user_code = r1.user_id
+		      ON u.user_code = r1.user_id  
 		INNER JOIN game.t_group_ref r2
 		      ON r1.root_id = r2.ref_id
 		INNER JOIN forum.t_user u2
 		      ON r2.user_id = u2.user_code
-		      AND u2.USER_ID in (select user_id from report.t_user_general_agent t where t.comments='shandong')
-				and u.client_id = 'BYAPP'
+		inner join report.t_partner_group tg on tg.user_id=u2.USER_CODE  and tg.is_valid=0 and tg.user_id='5962840904510621262'
+		      and u.client_id = 'BYAPP'
+		group by u.USER_ID
 		
-		union  
-		
-		select user_code from report.t_user_general_agent t where t.comments='shandong'
+		 union all
+	
+		select tg.user_id,tg.crt_time from report.t_partner_group tg  where tg.is_valid=0 and tg.user_id='5962840904510621262'
 	) t on ai.USER_ID=t.user_id
 	where ai.PAY_TIME>=@param0
 	and ai.PAY_TIME<@param1
@@ -92,21 +94,22 @@ left join
 (
 	select sum(ai.CHANGE_VALUE) cancel from forum.t_acct_items ai
 	inner join (
-		SELECT 
-		       u.user_id user_id
+			SELECT 
+	       u.user_id,r1.CRT_TIME
 		FROM   forum.t_user u
 		INNER JOIN game.t_group_ref r1
-		      ON u.user_code = r1.user_id
+		      ON u.user_code = r1.user_id  
 		INNER JOIN game.t_group_ref r2
 		      ON r1.root_id = r2.ref_id
 		INNER JOIN forum.t_user u2
 		      ON r2.user_id = u2.user_code
-		      AND u2.USER_ID in (select user_id from report.t_user_general_agent t where t.comments='shandong')
-				and u.client_id = 'BYAPP'
+		inner join report.t_partner_group tg on tg.user_id=u2.USER_CODE  and tg.is_valid=0 and tg.user_id='5962840904510621262'
+		      and u.client_id = 'BYAPP'
+		group by u.USER_ID
 		
-		union  
-		
-		select user_code from report.t_user_general_agent t where t.comments='shandong'
+		 union all
+	
+		select tg.user_id,tg.crt_time from report.t_partner_group tg  where tg.is_valid=0 and tg.user_id='5962840904510621262'
 	) t on ai.USER_ID=t.user_id
 	where ai.PAY_TIME>=@param0
 	and ai.PAY_TIME<@param1
@@ -122,21 +125,22 @@ union all
 select @param2 '时间','内部推广',t1.counts '人数',ifnull(t1.bets,0)-ifnull(t3.cancel,0) '投注',t2.prize '返奖' from (
 	select count(distinct ai.USER_ID) counts,sum(ai.CHANGE_VALUE) bets from forum.t_acct_items ai
 	inner join (
-		SELECT 
-		       u.user_id user_id
+			SELECT 
+	       u.user_id,r1.CRT_TIME
 		FROM   forum.t_user u
 		INNER JOIN game.t_group_ref r1
-		      ON u.user_code = r1.user_id
+		      ON u.user_code = r1.user_id  
 		INNER JOIN game.t_group_ref r2
 		      ON r1.root_id = r2.ref_id
 		INNER JOIN forum.t_user u2
 		      ON r2.user_id = u2.user_code
-		      AND u2.USER_ID in (select user_id from report.t_user_general_agent t where t.comments='inner')
-				and u.client_id = 'BYAPP'
+		inner join report.t_partner_group tg on tg.user_id=u2.USER_CODE  and tg.is_valid=0 and tg.user_id!='5962840904510621262'
+		      and u.client_id = 'BYAPP'
+		group by u.USER_ID
 		
-		union  
-		
-		select user_code from report.t_user_general_agent t where t.comments='inner'
+		 union all
+	
+		select tg.user_id,tg.crt_time from report.t_partner_group tg  where tg.is_valid=0 and tg.user_id!='5962840904510621262'
 	) t on ai.USER_ID=t.user_id
 	where ai.PAY_TIME>=@param0
 	and ai.PAY_TIME<@param1
@@ -150,20 +154,21 @@ left join
 	select sum(ai.CHANGE_VALUE) prize from forum.t_acct_items ai
 	inner join (
 		SELECT 
-		       u.user_id user_id
+	       u.user_id,r1.CRT_TIME
 		FROM   forum.t_user u
 		INNER JOIN game.t_group_ref r1
-		      ON u.user_code = r1.user_id
+		      ON u.user_code = r1.user_id  
 		INNER JOIN game.t_group_ref r2
 		      ON r1.root_id = r2.ref_id
 		INNER JOIN forum.t_user u2
 		      ON r2.user_id = u2.user_code
-		      AND u2.USER_ID in (select user_id from report.t_user_general_agent t where t.comments='inner')
-				and u.client_id = 'BYAPP'
+		inner join report.t_partner_group tg on tg.user_id=u2.USER_CODE  and tg.is_valid=0 and tg.user_id!='5962840904510621262'
+		      and u.client_id = 'BYAPP'
+		group by u.USER_ID
 		
-		union  
-		
-		select user_code from report.t_user_general_agent t where t.comments='inner'
+		 union all
+	
+		select tg.user_id,tg.crt_time from report.t_partner_group tg  where tg.is_valid=0 and tg.user_id!='5962840904510621262'
 	) t on ai.USER_ID=t.user_id
 	where ai.PAY_TIME>=@param0
 	and ai.PAY_TIME<@param1
@@ -176,21 +181,22 @@ left join
 (
 	select sum(ai.CHANGE_VALUE) cancel from forum.t_acct_items ai
 	inner join (
-		SELECT 
-		       u.user_id user_id
+			SELECT 
+	       u.user_id,r1.CRT_TIME
 		FROM   forum.t_user u
 		INNER JOIN game.t_group_ref r1
-		      ON u.user_code = r1.user_id
+		      ON u.user_code = r1.user_id  
 		INNER JOIN game.t_group_ref r2
 		      ON r1.root_id = r2.ref_id
 		INNER JOIN forum.t_user u2
 		      ON r2.user_id = u2.user_code
-		      AND u2.USER_ID in (select user_id from report.t_user_general_agent t where t.comments='inner')
-				and u.client_id = 'BYAPP'
+		inner join report.t_partner_group tg on tg.user_id=u2.USER_CODE  and tg.is_valid=0 and tg.user_id!='5962840904510621262'
+		      and u.client_id = 'BYAPP'
+		group by u.USER_ID
 		
-		union  
-		
-		select user_code from report.t_user_general_agent t where t.comments='inner'
+		 union all
+	
+		select tg.user_id,tg.crt_time from report.t_partner_group tg  where tg.is_valid=0 and tg.user_id!='5962840904510621262'
 	) t on ai.USER_ID=t.user_id
 	where ai.PAY_TIME>=@param0
 	and ai.PAY_TIME<@param1

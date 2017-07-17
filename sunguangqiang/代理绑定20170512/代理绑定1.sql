@@ -25,7 +25,6 @@ union all
   
 -- 山东代理设备数
 
-
 select count(distinct e.DEVICE_CODE) from forum.t_user_event e 
 inner join (
 

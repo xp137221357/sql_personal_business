@@ -3,6 +3,10 @@ set @beginTime = '2016-09-01';
 set @endTime = '2016-09-21';
 set @invite_code = '01036947';
 
+
+-- 邀请码下面的子用户
+
+
 -- 对game.t_group_ref表的理解
 -- ref_id 是用户自己的代理ID
 -- root_id 表示用户的原始总代理ID

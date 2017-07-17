@@ -1,5 +1,5 @@
 set @param0 = '2017-04-01 12:00:00'; 
-set @param1 = '2017-04-19 13:59:59';
+set @param1 = '2017-04-02 11:59:59';
 
 select date(o.CRT_TIME) stat_time,
 if(t.COST_TYPE=1001,'金币','体验币') '金币类型',

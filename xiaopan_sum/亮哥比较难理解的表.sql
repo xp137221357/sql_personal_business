@@ -20,12 +20,15 @@ t_acct_items 免费券的问题
 -- 使用
 -- 	where ai.item_event ='BUY_RECOM' and ai.ACCT_TYPE=103
 -- item_event="GET_FREE_COIN" --免费领取(包括来免费领取钻石和金币)
+-- 面额
+-- select t.CHILD_CODE_VALUE from t_code t where t.CODE ='coupons';
 t_code 罗列了所有的券种类
 注:在t_acct_items计算券面额时注意其中的'acct_type'
 账务表： v_account_item t  账务余额情况
 账务表： t_account_item_snap t 账务变动记录
 
 game.t_order_item 里面的oder_id指的是订单号,item_id表示具体项目 id,pay_time 投注时间,balance_time计算时间
+投注用的是order_id;返奖计算用的是item_id
 10 初始状态
 -5  退款中
 -10 已退款
@@ -41,4 +44,7 @@ game.t_order_item 里面的oder_id指的是订单号,item_id表示具体项目 i
 FROM forum.t_activity_award td
 inner join forum.t_act_award_ref r on r.AWARD_ID=td.AWARD_ID
 inner join forum.t_activity taa on r.ACT_ID=taa.ACT_ID
-inner join forum.t_activity_apply ta ta.ACT_ID=taa.ACT_ID
+inner join forum.t_activity_apply ta ta.ACT_ID=taa.ACT_ID;
+
+-- 登陆情况
+select * from report.t_device_statistic t where t.USER_CODE='123456' and t.CRT_TIME>='2017-01-01'

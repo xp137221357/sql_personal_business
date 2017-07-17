@@ -18,12 +18,11 @@ inner join (
 		      ON r1.root_id = r2.ref_id
 		INNER JOIN forum.t_user u2
 		      ON r2.user_id = u2.user_code
-		      AND u2.USER_ID in (select user_id from report.t_user_general_agent t where t.comments='shandong')
-				and u.client_id = 'BYAPP'
+		inner join report.t_partner_group tg on tg.user_id=u2.USER_CODE and tg.user_id='5962840904510621262'
 		
 		union  
 		
-		select user_code from report.t_user_general_agent t where t.comments='shandong'
+		select user_id from report.t_user_general_agent t where t.comments='shandong'
 	 
 	) t on e.USER_ID=t.user_id
 	group by e.DEVICE_CODE

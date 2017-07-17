@@ -287,7 +287,13 @@ GROUP BY t.pd_status;
 			</if>
 		</where>
 </delete>
-	
+
+-- mysql关联删除,指定删除对象(delete + join)
+DELETE t1
+FROM report.t_stat_partner_user t1
+INNER JOIN report.t_stat_partner_user t2 ON t1.ref_id=t2.ref_id
+WHERE t1.ref_id='14' ;
+
 -- 持续进步
 -- 数据查询 分组之 max,min的妙用 代替 排序
 -- 但是请注意：这种方式只能取 分组的字段 作关联条件
@@ -338,8 +344,8 @@ where rn >10
 -- mysql的正则表达式
 select * from forum.t_user u where u.NICK_NAME REGEXP 'byzq[0-9]' limit 1000
 
--- mysql字符串与数字的转化
-方法一：SELECT '123'+0; 
+-- mysql字符串与数字的转化(相应的转化让计算效率大幅提升)
+方法一：SELECT '123'*1; 
 方法二：SELECT CONVERT('123',SIGNED);
 方法三：SELECT CAST('123' AS SIGNED);
 -- 四舍五入 round
@@ -532,7 +538,34 @@ SELECT round(SUBSTRING_INDEX(@ip,'.',1)+
        SUBSTRING_INDEX(SUBSTRING_INDEX(@ip,'.',2),'.',-1)/1000+
        SUBSTRING_INDEX(SUBSTRING_INDEX(@ip,'.',3),'.',-1)/1000000+
        SUBSTRING_INDEX(SUBSTRING_INDEX(@ip,'.',4),'.',-1)/1000000000,9) from dual
- -- --------------------------------------------------------------------------------------
+       
+-- *mysql完美的IP解决方案
+set @ip='123.234.567.123';
+
+-- 原理(取反的妙用)：
+-- 分割字符串
+-- 通过取反,计算第一个字符串的长度（实际上是最后一个字符串）
+-- 从第一个字符串截取到 总长度减去最后一个字符串长度的位置（即去掉了最后一个 字符串）
+select substring(@ip,1,length(@ip)-locate('.',reverse(@ip)));
+
+-- *oracle完美的IP解决方案
+set @ip='123.234.567.123';
+select substring(@ip,1,len(@ip)-charindex('.',reverse(@ip)));
+
+-- 字符串处理
+-- 将符合条件的整合到一个字符串(group_concat)
+select group_concat(t.REF_ID) from game.t_group_ref t where t.REF_ID<100
+-- 判断前字符串是否存在后一个字符串 
+select group_concat(REF_ID) INTO sTempChd FROM game.T_GROUP_REF WHERE FIND_IN_SET(LAST_ID,sTempChd)>0
+
+-- *实现split方法原理*
+-- 先截取到目标字符串
+-- 然后取反,使得目标字符串到第一位
+-- 取到目标的反字符串
+-- 再次取反得到目标字符串
+-- *（取反的妙用）*
+select reverse(substring_index( reverse(substring_index(str, splitstr, strindex)), splitstr, 1));
+-- --------------------------------------------------------------------------------------
 
 -- *技术进阶（优化）
 -- 优化的实质（茅塞顿开）
@@ -626,4 +659,35 @@ SELECT to_char(SCN_TO_TIMESTAMP(293600547),'yyyy-mm-dd hh24:mi:ss') FROM DUAL;
 -- * 数据量大时候，尽量用join，尽量不用 in ，避免比较 
 -- * 数据量少用in时，里面尽量不用 union all，效率很低
 
+-- oracle
+-- 尽量使用exists取代in,not exists 取代 not in
+-- oracle创建存储过程
+create or replace procedure checkAccTranslog(n_min in number,
+                                             n_max in number) as
+  C_ALL_CURSOR  types.ref_cursor;
+  C_ITEM_CURSOR types.ref_cursor;
 
+  type t_pay_log is record(
+    count    number(30),
+    acc_name varchar2(1000));
+    st_pay_log t_pay_log;
+-- oracle游标实现循环
+open C_ALL_CURSOR for 'SELECT A.acc_name,B.MONEY_AFTER,B.MONEY_BEFORE FROM T_ACCOUNT_ITEM' || TNUM_INDEX || ' A  INNER JOIN 
+    (SELECT * FROM T_ACCOUNT_TRANSLOG' || TNUM_INDEX || ' WHERE OFFSET IN
+    (SELECT OFFSET FROM( SELECT MAX(OFFSET) OFFSET,ITEM_TYPE,ACC_NAME FROM T_ACCOUNT_TRANSLOG' || TNUM_INDEX || ' WHERE STATUS=10 AND acct_type=2 GROUP BY ITEM_TYPE,ACC_NAME)))
+     B ON A.ACC_NAME=B.ACC_NAME AND A.ITEM_TYPE=B.ITEM_TYPE AND A.ACCT_BALANCE!=B.MONEY_AFTER';
+loop
+fetch C_ALL_CURSOR
+  into s_acc_name, n_MONEY_BEFORE, n_MONEY_AFTER;
+exit when C_ALL_CURSOR%notfound;
+dbms_output.put_line('acc_name=' || s_acc_name || ', before=' ||
+                     n_MONEY_BEFORE || ', after=' || n_MONEY_AFTER);
+end loop;
+close C_ALL_CURSOR;
+
+-- oracle动态插入数据
+EXECUTE IMMEDIATE 'INSERT INTO t_TMP_ITEM(acc_name,item_type,acct_balance,freeze_money,credit_money,Tab_Suffix,CHECK_BALANCE,ACCT_TYPE)select a.acc_name,a.item_type,a.acct_balance,a.freeze_money,a.credit_money,' ||
+                      TNUM_INDEX || ',b.acct_balance,2 from T_ACCOUNT_ITEM' ||
+                      TNUM_INDEX ||
+                      ' a inner join TMP_ITEM b on a.acc_name=b.acc_name and a.item_type=b.item_type where a.acct_balance!=b.acct_balance or a.freeze_money!=b.freeze_money';
+  

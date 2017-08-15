@@ -95,8 +95,41 @@ SELECT Date_format(ti.add_time, '%Y-%m-%d')
   GROUP  BY stat_time,
             ta.system_model,
             ta.channel_no
-            
-            
+ 
+-- -----------------------------------------------------
+-- orcale 建表         
+
+create table T_USER_ATTRIBUTE
+(
+  user_id        NUMBER(19) not null,
+  user_code      VARCHAR2(50),
+  acct_num       NUMBER,
+  user_moblie    VARCHAR2(50),
+  channel_no     VARCHAR2(50),
+  root_user_code VARCHAR2(50),
+  status         NUMBER(4),
+  crt_time       DATE
+)
+
+-- orcale 创建索引
+
+create index IDX_T_USER_USER_ID on T_USER_ATTRIBUTE (USER_ID)
+  tablespace GACCOUNT2
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );    
+    
+-- orcale 唯一约束    
+alter table T_USER_ATTRIBUTE  
+add constraint  PK_T_USER_USER_ID  
+unique (USER_ID);   
             
 -- 为什么增加子查询会改善计算速度？
 -- 1.减少每次计算的数据
@@ -363,6 +396,7 @@ FROM DUAL
 
 -- 持续进步
 -- 使用PREPARE解决limit后面不能接变量问题以及计算
+***(尽量用'自增长列'代替'limit行号',后者执行效率太低)
 BEGIN
 DECLARE ssql VARCHAR(10000);
 SET @rownums=0;
@@ -690,4 +724,13 @@ EXECUTE IMMEDIATE 'INSERT INTO t_TMP_ITEM(acc_name,item_type,acct_balance,freeze
                       TNUM_INDEX || ',b.acct_balance,2 from T_ACCOUNT_ITEM' ||
                       TNUM_INDEX ||
                       ' a inner join TMP_ITEM b on a.acc_name=b.acc_name and a.item_type=b.item_type where a.acct_balance!=b.acct_balance or a.freeze_money!=b.freeze_money';
+                      
+                      
+-- ***效率问题
+-- 当in里面的子查询用到母查询里面的表时
+-- 尽量在自查询外面再嵌套一层select语句
+-- 将变量变成常量，可以大大提高执行效率
+-- *** 
+-- 当使用"in","not in"或者"="等嵌套语句时,在"嵌入表"的最外层再套一层select
+-- ***
   

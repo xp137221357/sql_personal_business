@@ -1,5 +1,11 @@
 
 
+select * from test.t_device_channel t where t.DL_URL='\b'
+
+update test.t_device_channel t 
+set t.DL_URL=null,
+t.COOPERATION_MODE=null;
+
 
 truncate test.t_device_channel;
 truncate test.t_channel_promote;
@@ -50,8 +56,9 @@ insert into report.t_channel_promote
 select null,t.* from test.t_channel_promote t;
 
 
-create table t_device_channel_20170615
+create table t_device_channel_20170815
 select * from report.t_device_channel;
+
 insert into report.t_device_channel
 select * from test.t_device_channel;
 

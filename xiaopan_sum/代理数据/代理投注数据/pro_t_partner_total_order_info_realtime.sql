@@ -27,7 +27,7 @@ BEGIN
 			OFFICIAL_PAY_NUMBER,OFFICIAL_PAY_MONEY,OTHER_PAY_NUMBER,OTHER_PAY_MONEY,SON_USER_NUMBER)
 			select * from (
          select 
-			t.STAT_TIME,
+			if(count(t.USER_ID)>0,curdate(),null) STAT_TIME,,
 			CUR_USER_ID,
 			sum(t.ITEM_ALL_MONEY),
 			sum(t.ITEM_MONEY),

@@ -1,0 +1,9 @@
+CREATE DEFINER=`report`@`%` EVENT `event_t_group_ref`
+	ON SCHEDULE
+		EVERY 1 DAY STARTS '2017-07-28 12:00:00'
+	ON COMPLETION NOT PRESERVE
+	ENABLE
+	COMMENT ''
+	DO BEGIN
+call pro_t_group_ref();
+END

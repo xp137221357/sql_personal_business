@@ -1,0 +1,80 @@
+BEGIN     
+	
+	DECLARE cur_user_id BIGINT(19);
+	DECLARE max_user_id BIGINT(19);
+	DECLARE temp_user_id BIGINT(19);
+	DECLARE temp_ref_user_id BIGINT(19);
+	DECLARE temp_ref_user_id_arr text;
+	DECLARE temp_first_user_id BIGINT(19);
+	DECLARE stat_time datetime;
+	DECLARE counts INT(11);
+	DECLARE indexs INT(11);
+	
+	set stat_time=date('2017-08-10');
+	set cur_user_id=1;	
+	select max(USER_ID) into max_user_id from forum.t_user u where u.CLIENT_ID='byapp' and u.CRT_TIME<stat_time;
+
+	WHILE cur_user_id<=max_user_id DO	
+		set temp_user_id=-1;
+		select USER_ID into temp_user_id from forum.t_user u where u.CLIENT_ID='byapp' and u.USER_ID=cur_user_id;
+		
+		set temp_ref_user_id=-1;
+		
+	-- 用户设备关系
+		if temp_user_id>0
+			then
+			
+			select group_concat(t.ref_user_id) into temp_ref_user_id_arr from t_stat_user_device t
+				where t.ref_user_id is not null 
+				and t.device_code in (
+					select * from (
+						select t.device_code from t_stat_user_device t
+						where t.user_id=temp_user_id
+					) t
+				);
+				
+				
+			select group_concat(tt.ref_user_id),count(1) into temp_ref_user_id_arr,counts 
+			from (select t.ref_user_id from t_stat_user_device t
+						where t.ref_user_id is not null 
+						and t.device_code in (
+							select * from (
+								select t.device_code from t_stat_user_device t
+								where t.user_id=temp_user_id
+							) t
+				 ) group by t.ref_user_id
+			) tt;
+			
+			set indexs=1;
+			
+			while indexs<=counts do
+			   if indexs=1
+			   then
+					select convert(reverse(substring_index( reverse(substring_index(temp_ref_user_id_arr, ',', indexs)), ',', 1)),unsigned) into temp_first_user_id;
+					update t_stat_user_device t 
+					set t.ref_user_id=if(temp_first_user_id>0,temp_first_user_id,temp_user_id)
+					where t.device_code in (
+						select * from (
+							select t.device_code from t_stat_user_device t
+							where t.user_id=temp_user_id
+						) t
+					);
+					
+				else
+					select convert(reverse(substring_index( reverse(substring_index(temp_ref_user_id_arr, ',', indexs)), ',', 1)),unsigned) into temp_ref_user_id;
+					update t_stat_user_device t set t.ref_user_id=temp_first_user_id where t.ref_user_id=temp_ref_user_id;
+				end if;
+				
+			
+				set indexs=indexs+1;
+			END WHILE; 	
+				
+			
+		end if;	
+			
+		set cur_user_id=cur_user_id+1;
+
+	END WHILE;    
+	
+	
+END

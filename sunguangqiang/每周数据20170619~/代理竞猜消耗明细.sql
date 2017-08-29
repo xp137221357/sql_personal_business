@@ -1,5 +1,5 @@
-set @param0='2017-08-07 12:00:00';
-set @param1='2017-08-14 12:00:00';
+set @param0='2017-08-21 12:00:00';
+set @param1='2017-08-28 12:00:00';
 
 set @param2=concat(@param0,'~',@param1);
 

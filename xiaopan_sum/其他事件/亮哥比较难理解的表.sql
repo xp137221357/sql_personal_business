@@ -30,6 +30,7 @@ t_code 罗列了所有的券种类
 game.t_order_item 里面的oder_id指的是订单号,item_id表示具体项目 id,pay_time 投注时间,balance_time计算时间
 投注用的是order_id;返奖计算用的是item_id
 10 初始状态
+200 中间状态
 -5  退款中
 -10 已退款
 210 退款成功
@@ -39,6 +40,8 @@ game.t_order_item 里面的oder_id指的是订单号,item_id表示具体项目 i
 120:走盘
 130:输一半
 140:赢一半
+
+无效状态：(-5,-10,0,10,200,210)
 
 -- 活动列表
 FROM forum.t_activity_award td

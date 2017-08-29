@@ -99,6 +99,3 @@ and ai.APP_TYPE='byapp';
 
 
 
-
-
-select * from report.t_job t order by t.last_executed desc

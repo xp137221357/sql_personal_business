@@ -1,4 +1,5 @@
 -- ***mysql性能优化
+-- 换一种思路,海口天空
 -- http://www.thinkphp.cn/topic/3855.html
 
 set @beginTime='2016-07-11';
@@ -172,7 +173,7 @@ and tfc.CRT_TIME>=date_add(@beginTime,interval -(datediff(@endTime,@beginTime)+1
 )tt ;
 
 
--- 计算时差，精确到秒-- 区别datediff
+-- 计算时间差，精确到秒-- 区别datediff
 SELECT TIMESTAMPDIFF(hour,'2009-9-01','2009-10-01'); 
 
 
@@ -580,16 +581,21 @@ set @ip='123.234.567.123';
 -- 分割字符串
 -- 通过取反,计算第一个字符串的长度（实际上是最后一个字符串）
 -- 从第一个字符串截取到 总长度减去最后一个字符串长度的位置（即去掉了最后一个 字符串）
-select substring(@ip,1,length(@ip)-locate('.',reverse(@ip)));
+-- *substring与substr(函数)的功能一样
+
+select substr(@ip,1,length(@ip)-locate('.',reverse(@ip)));
 
 -- *oracle完美的IP解决方案
 set @ip='123.234.567.123';
-select substring(@ip,1,len(@ip)-charindex('.',reverse(@ip)));
+select substr(@ip,1,len(@ip)-charindex('.',reverse(@ip)));
 
--- 字符串处理
--- 将符合条件的整合到一个字符串(group_concat)
+
+-- 字符串处理(当用到in与字符串变量的搭配时)
+-- *将符合条件的整合到一个字符串(group_concat)
 select group_concat(t.REF_ID) from game.t_group_ref t where t.REF_ID<100
--- 判断前字符串是否存在后一个字符串 
+-- *判断前'字符串'是否包含后一个'字符串' 
+select group_concat(REF_ID) INTO sTempChd FROM game.T_GROUP_REF WHERE instr(sTempChd,LAST_ID)
+-- *判断前面的'元素'是否存在后'集合'
 select group_concat(REF_ID) INTO sTempChd FROM game.T_GROUP_REF WHERE FIND_IN_SET(LAST_ID,sTempChd)>0
 
 -- *实现split方法原理*

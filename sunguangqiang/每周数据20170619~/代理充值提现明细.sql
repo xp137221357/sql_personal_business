@@ -1,5 +1,5 @@
-set @param0='2017-08-21 12:00:00';
-set @param1='2017-08-28 12:00:00';
+set @param0='2017-09-04 12:00:00';
+set @param1='2017-09-11 12:00:00';
 set @param2=concat(@param0,'~',@param1);
 
 select @param2,'充值汇总',count(distinct tc.charge_user_id) '充值人数',sum(tc.coins) '充值金币'

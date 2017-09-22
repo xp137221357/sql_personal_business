@@ -1,9 +1,3 @@
-CREATE DEFINER=`report`@`%` PROCEDURE `pro_t_partner_order_info_datetime`()
-	LANGUAGE SQL
-	NOT DETERMINISTIC
-	CONTAINS SQL
-	SQL SECURITY DEFINER
-	COMMENT ''
 BEGIN     
 	
 	DECLARE CUR_REF_ID BIGINT(19);
@@ -21,9 +15,11 @@ BEGIN
       if TEMP_REF_ID>0 
       then
 	      -- 投注结算
-	      insert into t_partner_order_info (STAT_TIME,USER_ID,ITEM_ALL_MONEY,ITEM_MONEY,PRIZE_ALL_MONEY,PRIZE_MONEY,PROFIT_ALL_COIN,PROFIT_COIN,EFFECTIVE_MONEY,LAST_ORDER_TIME)
+	      insert into t_stat_partner_order_info (STAT_TIME,TYPE,USER_ID,ITEM_ALL_MONEY,ITEM_MONEY,PRIZE_ALL_MONEY,PRIZE_MONEY,PROFIT_ALL_COIN,PROFIT_COIN,EFFECTIVE_MONEY,LAST_ORDER_TIME)
 	      select * from (
-				select date_add(curdate(),interval -1 day) STAT_TIME,
+				select 
+				date_add(curdate(),interval -1 day) STAT_TIME,
+				1,
 				t.USER_ID,
 				sum(t.ITEM_MONEY) ITEM_ALL_MONEY,
 				sum(t.COIN_BUY_MONEY) ITEM_MONEY,
@@ -68,21 +64,41 @@ BEGIN
 			
 			
 			-- 充值情况
-			insert into t_partner_order_info (STAT_TIME,USER_ID,OFFICIAL_PAY_MONEY,OTHER_PAY_MONEY)
+			insert into t_stat_partner_order_info (STAT_TIME,TYPE,USER_ID,OFFICIAL_PAY_NUMBER,OFFICIAL_PAY_MONEY,OTHER_PAY_NUMBER,OTHER_PAY_MONEY)
 			select * from (
-				select
-				date_add(curdate(),interval -1 day) STAT_TIME,
-				if(tc.charge_user_id is not null,tf.user_id,null) user_id,
-				sum(if(tc.charge_method='app',tc.coins,0)) OFFICIAL_PAY_MONEY,
-				sum(if(tc.charge_method!='app',tc.coins,0)) OTHER_PAY_MONEY
-				from report.t_trans_user_recharge_coin tc 
-				inner join forum.t_user u on tc.charge_user_id=u.USER_ID
-				inner join game.t_group_ref tf on tf.USER_ID=u.USER_CODE and tf.REF_ID=TEMP_REF_ID
-				and tc.crt_time>=date_add(curdate(),interval -12 hour)
-				and tc.crt_time< date_add(curdate(),interval 12 hour)
+				select date_add(curdate(),interval -1 day) STAT_TIME,
+				1,
+				t.user_id,
+				if(t.OFFICIAL_PAY_MONEY>0,1,0) OFFICIAL_PAY_NUMBER,
+				t.OFFICIAL_PAY_MONEY,
+				if(t.OTHER_PAY_MONEY>0,1,0) OTHER_PAY_NUMBER,
+				t.OTHER_PAY_MONEY
+				 from (
+					select 
+					tc.user_id,
+					sum(if(tc.charge_method='app',tc.rmb_value,0)) OFFICIAL_PAY_MONEY,
+					sum(if(tc.charge_method!='app',tc.rmb_value,0)) OTHER_PAY_MONEY
+					from (
+						select tf.user_id,tc.charge_method,tc.rmb_value from report.t_trans_user_recharge_coin tc 
+						inner join forum.t_user u on tc.charge_user_id=u.USER_ID
+						inner join game.t_group_ref tf on tf.USER_ID=u.USER_CODE and tf.REF_ID=TEMP_REF_ID
+						and tc.crt_time>=date_add(curdate(),interval -12 hour)
+						and tc.crt_time< date_add(curdate(),interval 12 hour)
+						
+						union all 
+						
+						select tf.user_id,tc.charge_method,tc.rmb_value from report.t_trans_user_recharge_diamond tc 
+						inner join forum.t_user u on tc.charge_user_id=u.USER_ID
+						inner join game.t_group_ref tf on tf.USER_ID=u.USER_CODE and tf.REF_ID=TEMP_REF_ID
+						and tc.crt_time>=date_add(curdate(),interval -12 hour)
+						and tc.crt_time< date_add(curdate(),interval 12 hour)
+					) tc
+				) t
 			) t where t.USER_ID is not null
 			on duplicate key UPDATE 
+			OFFICIAL_PAY_NUMBER = VALUES(OFFICIAL_PAY_NUMBER),
 			OFFICIAL_PAY_MONEY = VALUES(OFFICIAL_PAY_MONEY),
+			OTHER_PAY_NUMBER = VALUES(OTHER_PAY_NUMBER),
 			OTHER_PAY_MONEY = VALUES(OTHER_PAY_MONEY);
 			
 		end if;
@@ -91,12 +107,25 @@ BEGIN
 	END WHILE;    
 	
 	-- 刷充值人员的最后投注时间
-	insert into t_partner_order_info(STAT_TIME,USER_ID,LAST_ORDER_TIME)
-	select t.STAT_TIME,t.USER_ID,max(o.PAY_TIME) from t_partner_order_info t 
+	insert into t_stat_partner_order_info(STAT_TIME,TYPE,USER_ID,LAST_ORDER_TIME)
+	select t.STAT_TIME,1,t.USER_ID,max(o.PAY_TIME) from t_stat_partner_order_info t 
 	inner join game.t_order_item o on t.USER_ID=o.USER_ID and t.LAST_ORDER_TIME is null and t.STAT_TIME=date_add(curdate(),interval -1 day)
 	and o.item_status not in (0,10,-5,-10,200,210)
 	group by t.USER_ID
 	on duplicate key update  
 	LAST_ORDER_TIME = VALUES(LAST_ORDER_TIME);
+	
+	-- 更新ref_id,last_id
+	
+	insert into t_stat_partner_order_info(STAT_TIME,TYPE,USER_ID,USER_ADD_TIME,USER_CRT_TIME,REF_ID,LAST_ID,ROOT_ID)
+	select t.STAT_TIME,1,t.USER_ID,tf.ADD_TIME,tf.CRT_TIME,tf.REF_ID,tf.LAST_ID,tf.ROOT_ID from t_stat_partner_order_info t 
+	inner join game.t_group_ref tf on tf.USER_ID=t.USER_ID and t.`TYPE`=1 and t.REF_ID is null and t.STAT_TIME=date_add(curdate(),interval -1 day)
+	on duplicate key update 
+	USER_ADD_TIME = VALUES(USER_ADD_TIME), 
+	USER_CRT_TIME = VALUES(USER_CRT_TIME), 
+	REF_ID = VALUES(REF_ID),
+	LAST_ID = VALUES(LAST_ID),
+	ROOT_ID = VALUES(ROOT_ID);
+	
 	
 END

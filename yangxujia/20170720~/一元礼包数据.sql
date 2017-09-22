@@ -5,6 +5,24 @@ BEGIN
 set @curId = 1;
 set @maxId = 15541;
 
+
+
+update t_stat_yylb_20170905 t
+inner join report.t_trans_user_attr tu on t.user_id=tu.USER_ID
+inner join report.t_trans_user_recharge_coin tc on t.user_id=tc.charge_user_id and tc.rmb_value=1
+set t.pay_time=tc.crt_time,
+t.channel_no=tu.CHANNEL_NO;
+
+
+(
+select ty.user_id,count(1) times from report.t_trans_user_recharge_coin tc 
+inner join t_stat_yylb_20170731 ty on tc.charge_user_id=ty.user_id and tc.rmb_value!=1
+group by ty.user_id
+)tt on t.user_id=tt.user_id
+set t.coin_recharge_times=times;
+
+
+
 update t_stat_yylb_20170731 t
 inner join (
 select ty.user_id,count(1) times from report.t_trans_user_recharge_coin tc 

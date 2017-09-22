@@ -18,8 +18,8 @@ order by t.CRT_TIME asc ;
 
 select sum(t.MONEY_AFTER*0.01)-sum(t.MONEY_BEFORE*0.01) CHANGED_SUM
 from v_account_translog t 
-where TO_DATE('19700101','yyyymmdd') + ((floor(t.CRT_TIME/1000)+28800)/86400) >= to_date( '2017-05-22' ||' 00:00:00','yyyy-mm-dd hh24:mi:ss')
-and TO_DATE('19700101','yyyymmdd') + ((floor(t.CRT_TIME/1000)+28800)/86400) <= to_date('2017-05-22' ||' 23:59:59','yyyy-mm-dd hh24:mi:ss') 
+where TO_DATE('19700101','yyyymmdd') + ((floor(t.CRT_TIME/1000)+28800)/86400) >= to_date( '2017-09-12' ||' 00:00:00','yyyy-mm-dd hh24:mi:ss')
+and TO_DATE('19700101','yyyymmdd') + ((floor(t.CRT_TIME/1000)+28800)/86400) <= to_date('2017-09-12' ||' 23:59:59','yyyy-mm-dd hh24:mi:ss') 
 and t.ITEM_TYPE = 1001 AND T.STATUS = 10 
 and t.ACC_NAME not in ('3472351858331386256','6149208545176280651','8270936710946839603');
 
@@ -28,8 +28,8 @@ and t.ACC_NAME not in ('3472351858331386256','6149208545176280651','827093671094
 select tt.ACC_NAME_,tt.value from(    
 select t.ACC_NAME,t.ACC_NAME||'_' ACC_NAME_,sum(t.MONEY_AFTER*0.01)-sum(t.MONEY_BEFORE*0.01) value
 from v_account_translog t 
-where TO_DATE('19700101','yyyymmdd') + ((floor(t.CRT_TIME/1000)+28800)/86400) >= to_date( '2017-05-19' ||' 00:00:00','yyyy-mm-dd hh24:mi:ss')
-and TO_DATE('19700101','yyyymmdd') + ((floor(t.CRT_TIME/1000)+28800)/86400) <= to_date('2017-05-19' ||' 23:59:59','yyyy-mm-dd hh24:mi:ss') 
+where TO_DATE('19700101','yyyymmdd') + ((floor(t.CRT_TIME/1000)+28800)/86400) >= to_date( '2017-09-18' ||' 00:00:00','yyyy-mm-dd hh24:mi:ss')
+and TO_DATE('19700101','yyyymmdd') + ((floor(t.CRT_TIME/1000)+28800)/86400) <= to_date('2017-09-18' ||' 23:59:59','yyyy-mm-dd hh24:mi:ss') 
 and t.ACC_NAME not in ('3472351858331386256','6149208545176280651','8270936710946839603')
 and t.ITEM_TYPE = 1001 AND T.STATUS = 10 
 group by t.ACC_NAME

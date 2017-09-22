@@ -1,5 +1,5 @@
-set @param0='2017-05-19';
-set @param1='2017-05-19 23:59:59';
+set @param0='2017-09-14';
+set @param1='2017-09-14 23:59:59';
 
 
 
@@ -16,6 +16,9 @@ group by ai.ITEM_EVENT
 
 truncate t_acct_item_20170322;
 truncate t_acct_item_20170322_log;
+
+
+select count(1) from t_acct_item_20170322
 
 
 -- create table t_acct_item_20170322
@@ -57,8 +60,12 @@ and date(ai.UPDATE_TIME)>date(ai.PAY_TIME);
 truncate t_acct_item_20170322;
 truncate t_acct_item_20170322_log;
 
+SELECT *
+FROM t_acct_item_20170322
 
-select count(1),sum(t.value) from t_acct_item_20170322 t;
+
+select count(1),sum(t.value) from t_acct_item_20170322 t
+union all
 select count(1),sum(t.value) from t_acct_item_20170322_log t;
 
 
@@ -78,7 +85,7 @@ where t2.user_id is null
 -- 对账1
 select * from t_acct_item_20170322 t1
 left join t_acct_item_20170322_log t2 on t1.user_id=t2.user_id
-where abs(ifnull(t1.value,0)-ifnull(t2.value,0))>100;
+where abs(ifnull(t1.value,0)-ifnull(t2.value,0))>=10;
 
 -- 对账2
 select * from t_acct_item_20170322_log t1
@@ -130,8 +137,36 @@ select * from game.t_order_item o where o.ITEM_ID='0bee22d8c4db429eb1a659a90af09
 
 
 
+GAME-PAY-8f0743b4413d4e4788c8221419b704b4L0
+
+-- 40492904e9314cddba9b790e5f778427
+SELECT *
+FROM forum.t_acct_items ai
+WHERE ai.TRADE_NO='8bd6e66b17b94519a36bf1ee04b82df5';
+
+SELECT * FROM game.t_order_item o WHERE o.ORDER_ID='8bd6e66b17b94519a36bf1ee04b82df5';
+
+
+
+select * from 8bd6e66b17b94519a36bf1ee04b82df5
 
 
 
 
+select * from forum.t_acct_items ai   
+where ai.PAY_TIME>=@param0
+and ai.PAY_TIME<@param1
+and ai.ACCT_TYPE=1001
+and ai.ITEM_STATUS in (10,-10)
+and ai.ACCT_ID='4245759098098282158'
+order by ai.ITEM_ID asc;
+
+
+-- GAME-PAY-ed7ccb3409074b88bb8bdeec66c568c0L0
+
+
+
+select * from forum.t_acct_items ai where ai.TRADE_NO='ed7ccb3409074b88bb8bdeec66c568c0';
+
+select * from game.t_order_item o where o.ORDER_ID='ed7ccb3409074b88bb8bdeec66c568c0';
 

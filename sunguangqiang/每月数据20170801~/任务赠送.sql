@@ -1,9 +1,9 @@
 
 
 
-set @param0 = '2017-07-01'; 
-set @param1 = '2017-07';
-set @param2 = '7月份';
+set @param0 = '2017-08-01'; 
+set @param1 = '2017-08';
+set @param2 = '8月份';
 
 
 -- 总任务赠送
@@ -33,13 +33,13 @@ inner join (
 	      ON r1.root_id = r2.ref_id
 	INNER JOIN forum.t_user u2
 	      ON r2.user_id = u2.user_code
-	inner join report.t_group_partner_detail td on td.user_id=u2.USER_ID and td.stat_time=@param1 
+	inner join report.t_partner_group_detail td on td.user_id=u2.USER_ID and td.stat_time=@param1 
 	      and u.client_id = 'BYAPP'
 	group by u.USER_ID
 	
 	union all
 	
-	select td.user_code,'2017-01-01' from report.t_group_partner_detail td where td.stat_time=@param1
+	select td.user_code,'2017-01-01' from report.t_partner_group_detail td where td.stat_time=@param1
 ) tt on ai.USER_ID=tt.user_id
 where ai.PAY_TIME>=@param0 
 and ai.PAY_TIME>=tt.CRT_TIME

@@ -1,38 +1,73 @@
 -- 竞猜消耗
 
+set @param0 = '2017-08-01'; 
+set @param2 = '8月份';
+
+select * from (
+	select '百盈用户',@param2 '时间','百盈足球',count(distinct o.user_id) '投注人数',round(sum(o.COIN_BUY_MONEY)) '金币投注'
+	from game.t_order_item o 
+	where o.PAY_TIME>=@param0
+	and o.PAY_TIME<date_add(@param0,interval 1 month)
+	and o.ITEM_STATUS not in (-5,-10,210)
+	and o.COIN_BUY_MONEY>0
+	and o.CHANNEL_CODE in ('game')
+)t1
+left join(
+	select round(ifnull(sum(o.COIN_PRIZE_MONEY),0)+ifnull(sum(o.COIN_RETURN_MONEY),0)) '返奖金币'
+	from game.t_order_item o 
+	where o.BALANCE_TIME>=@param0
+	and o.BALANCE_TIME<date_add(@param0,interval 1 month)
+	and o.ITEM_STATUS not in (-5,-10,210)
+	and o.COIN_BUY_MONEY>0
+	and o.CHANNEL_CODE in ('game')
+) t2 on 1=1;
+
+select * from (
+	select '代理用户',@param2 '时间','百盈足球',count(distinct o.user_id) '投注人数',round(sum(o.COIN_BUY_MONEY)) '金币投注'
+	from game.t_order_item o 
+	inner join game.t_group_ref tf on o.user_id=tf.USER_ID and o.PAY_TIME>tf.add_time
+	where o.PAY_TIME>=@param0
+	and o.PAY_TIME<date_add(@param0,interval 1 month)
+	and o.ITEM_STATUS not in (-5,-10,210)
+	and o.COIN_BUY_MONEY>0
+	and o.CHANNEL_CODE in ('game')
+)t1
+left join(
+	select round(ifnull(sum(o.COIN_PRIZE_MONEY),0)+ifnull(sum(o.COIN_RETURN_MONEY),0)) '返奖金币'
+	from game.t_order_item o 
+	inner join game.t_group_ref tf on o.user_id=tf.USER_ID and o.PAY_TIME>tf.add_time
+	where o.BALANCE_TIME>=@param0
+	and o.BALANCE_TIME<date_add(@param0,interval 1 month)
+	and o.ITEM_STATUS not in (-5,-10,210)
+	and o.COIN_BUY_MONEY>0
+	and o.CHANNEL_CODE in ('game')
+) t2 on 1=1;
 
 
-select * from t_stat_coin_operate_dawn t order by t.stat_date desc limit 10;
-
--- 杭州手机号码+投注>100000(2017-01-01~现在)，用户昵称，会员号，累积投注金币，累积返奖
-
-select * from t_mobile_location t where t.CITY='杭州';
-
-
-
-select sum(o.COIN_BUY_MONEY) from forum.t_user u 
-inner join forum.t_mobile_location tm on u.USER_MOBILE=tm.MOBILE and tm.CITY='杭州'
-inner join game.t_order_item o on u.USER_CODE=o.USER_ID
-and o.ITEM_STATUS not in (-5,-10,210)
-and o.CHANNEL_CODE in ('game','jrtt-jingcai')
-and o.COIN_BUY_MONEY>0
-and o.CRT_TIME>='2017-01-01';
-
-
-
-select ifnull(sum(o.COIN_PRIZE_MONEY),0)+ifnull(sum(o.COIN_RETURN_MONEY),0) from forum.t_user u 
-inner join forum.t_mobile_location tm on u.USER_MOBILE=tm.MOBILE and tm.CITY='杭州'
-inner join game.t_order_item o on u.USER_CODE=o.USER_ID
-and o.ITEM_STATUS not in (-5,-10,210)
-and o.CHANNEL_CODE in ('game','jrtt-jingcai')
-and o.COIN_BUY_MONEY>0
-and o.BALANCE_TIME>='2017-01-01';
+select * from (
+	select '今日头条用户',@param2 '时间','百盈足球',count(distinct o.user_id) '投注人数',round(sum(o.COIN_BUY_MONEY)) '金币投注'
+	from game.t_order_item o 
+	where o.PAY_TIME>=@param0
+	and o.PAY_TIME<date_add(@param0,interval 1 month)
+	and o.ITEM_STATUS not in (-5,-10,210)
+	and o.COIN_BUY_MONEY>0
+	and o.CHANNEL_CODE in ('jrtt-jingcai')
+)t1
+left join(
+	select round(ifnull(sum(o.COIN_PRIZE_MONEY),0)+ifnull(sum(o.COIN_RETURN_MONEY),0)) '返奖金币'
+	from game.t_order_item o 
+	where o.BALANCE_TIME>=@param0
+	and o.BALANCE_TIME<date_add(@param0,interval 1 month)
+	and o.ITEM_STATUS not in (-5,-10,210)
+	and o.COIN_BUY_MONEY>0
+	and o.CHANNEL_CODE in ('jrtt-jingcai')
+) t2 on 1=1;
 
 
 
-insert into t_user_hangzhou(user_id)
-select u.USER_CODE from forum.t_user u 
-inner join forum.t_mobile_location tm on u.USER_MOBILE=tm.MOBILE and tm.CITY='杭州';
+
+
+
 
 
 

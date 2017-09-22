@@ -371,8 +371,8 @@ update t_job t set t.table_name=substr(t.job_name,locate('[',t.job_name)+1,locat
 -- rownum 总是从 1 开始
 -- 一般代码中对结果集进行分页就是这么干的:
 select * 
-from (selet rownum as rn,t1.* from a where ...)
-where rn >10
+from (selet rownum as rn,t1.* from a where ... order by ...) t
+where t.rn >10
 
 -- 持续进步
 -- mysql的正则表达式
@@ -739,4 +739,8 @@ EXECUTE IMMEDIATE 'INSERT INTO t_TMP_ITEM(acc_name,item_type,acct_balance,freeze
 -- *** 
 -- 当使用"in","not in"或者"="等嵌套语句时,在"嵌入表"的最外层再套一层select
 -- ***
+
+-- 对于失效的数据 
+-- 数据库而言尽量避免删除数据
+***采用设置(无效/有效)的方式更加高效,更安全,更加有源可溯
   

@@ -50,17 +50,24 @@ update t_job t set t.next_time_execute='2017-03-24' where t.job_name like '%oper
 select * from t_channel_promote t where t.LINK='/st?e_c=jrtt84&e_a=pageview'
 
 
-create table t_channel_promote_20170615
+create table report.t_channel_promote_20170615
 select * from report.t_channel_promote;
 insert into report.t_channel_promote
 select null,t.* from test.t_channel_promote t;
 
 
-create table t_device_channel_20170815
+create table report.t_device_channel_20170920
 select * from report.t_device_channel;
 
 insert into report.t_device_channel
 select * from test.t_device_channel;
+
+
+select * from forum.t_user u where u.USER_CODE='7819056312925077863';
+
+
+select ai.ITEM_EVENT from forum.t_acct_items ai 
+group  by ai.ITEM_EVENT;
 
 
 

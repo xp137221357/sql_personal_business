@@ -1,6 +1,6 @@
 -- 足球数据
-set @param0 = '2017-07-01'; 
-set @param2 = '7月份';
+set @param0 = '2017-08-01'; 
+set @param2 = '8月份';
 
 
 
